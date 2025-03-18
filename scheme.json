@@ -1,0 +1,112 @@
+{
+  id: "contact-form-widget",
+  type: "Container",
+  props: {
+    direction: "column",
+    position: "default",
+  },
+  children: [
+    {
+      id: "form-title",
+      type: "Text",
+      props: {
+        text: "Contact Us",
+        type: "h2Semibold",
+      },
+    },
+    {
+      id: "name-input",
+      type: "Input",
+      props: {
+        placeholder: "Your Name",
+      },
+      actions: {
+        lifecycle: [],
+        interactive: [
+          { type: "storeData", trigger: "onChange", payload: { src: "name-input"
+            }
+          }
+        ],
+      },
+    },
+    {
+      id: "email-input",
+      type: "Input",
+      props: {
+        placeholder: "Your Email",
+      },
+      actions: {
+        lifecycle: [],
+        interactive: [
+          { type: "storeData", trigger: "onChange", payload: { src: "email-input"
+            }
+          }
+        ],
+      },
+    },
+    {
+      id: "submit-button",
+      type: "Button",
+      props: {
+        size: "m",
+      },
+      actions: {
+        lifecycle: [],
+        interactive: [
+          {
+            type: "postData",
+            trigger: "onClick",
+            payload: {
+              url: "/api/contact/submit",
+              fetchOpts: {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              },
+              body: {
+                name: "${state.name
+                }",
+                email: "${state.email
+                }",
+              },
+            },
+            postActions: {
+              onSuccess: [
+                {
+                  type: "updateWidget",
+                  payload: {
+                    current: "contact-form-widget",
+                    new: "thank-you-widget",
+                  },
+                },
+              ],
+              onError: [],
+            },
+          },
+        ],
+      },
+    },
+  ],
+  actions: {
+    lifecycle: [
+      {
+        type: "getData",
+        phase: "mount",
+        payload: {
+          url: "/api/user/info",
+          fetchOpts: {
+            headers: {
+              Authorization: "Bearer ${userToken
+              }",
+            },
+          },
+          vars: {
+            "%userId%": "user.id",
+          },
+        },
+      },
+    ],
+    interactive: [],
+  },
+};
