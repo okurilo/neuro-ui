@@ -17,22 +17,23 @@ const animations = {
   `,
 };
 
-// Контейнер для инпута с улучшенными анимациями
 const InputWrapper = styled('div')<{ $isFirstMessage: boolean }>(
   ({ $isFirstMessage }) => ({
-    position: $isFirstMessage ? 'fixed' : 'relative',
+    position: $isFirstMessage ? 'fixed' : 'fixed', // Всегда фиксированное позиционирование
     top: $isFirstMessage ? '50%' : 'auto',
-    left: $isFirstMessage ? '50%' : 'auto',
-    transform: $isFirstMessage ? 'translate(-50%, -50%)' : 'none',
+    left: $isFirstMessage ? '50%' : '0',
     width: '100%',
+    transform: $isFirstMessage ? 'translate(-50%, -50%)' : 'none',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '16px 0',
+    padding: '16px',
     marginTop: 'auto',
     transition: 'all 0.8s cubic-bezier(0.19, 1, 0.22, 1)',
-    zIndex: 10,
-    bottom: $isFirstMessage ? 'auto' : 0
+    zIndex: 100,
+    bottom: $isFirstMessage ? 'auto' : 0,
+    background: $isFirstMessage ? 'transparent' : 'linear-gradient(to top, rgb(223 223 223) 60%, rgba(255, 255, 255, 0))',
+    // background: $isFirstMessage ? 'transparent' : 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))',
   })
 );
 
@@ -41,17 +42,17 @@ const InputContainer = styled('div')<{ $isFirstMessage: boolean }>(
     display: 'flex',
     alignItems: 'center',
     width: '100%',
-    maxWidth: $isFirstMessage ? '70%' : '100%',
-    padding: '8px 16px',
+    maxWidth: $isFirstMessage ? '70%' : '800px',
+    padding: '10px 16px',
     backgroundColor: '#fff',
-    borderRadius: '28px',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+    borderRadius: '24px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
     transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     '&:focus-within': {
-      boxShadow: '0 3px 10px rgba(106, 113, 235, 0.3)'
+      boxShadow: '0 4px 12px rgba(106, 113, 235, 0.3)'
     },
     '@media (max-width: 768px)': {
-      maxWidth: $isFirstMessage ? '90%' : '100%'
+      maxWidth: $isFirstMessage ? '90%' : '95%'
     }
   }),
   ({ $isFirstMessage }) => $isFirstMessage && animations.pulseEffect
@@ -72,24 +73,25 @@ const Input = styled('input')({
   }
 });
 
-// Стилизованная кнопка отправки с улучшенной анимацией
 const SendButton = styled('button')<{ $hasText: boolean }>(
   ({ $hasText }) => ({
-    width: '36px',
-    height: '36px',
+    width: '42px',
+    height: '42px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     border: 'none',
-    background: 'none',
+    background: $hasText ? '#4a7dff' : '#e0e0e0',
+    borderRadius: '50%',
     cursor: $hasText ? 'pointer' : 'default',
-    transition: 'transform 0.2s ease, opacity 0.3s ease',
+    transition: 'all 0.2s ease',
     padding: 0,
-    marginLeft: '4px',
-    opacity: $hasText ? 1 : 0.5,
+    marginLeft: '8px',
+    opacity: $hasText ? 1 : 0.6,
     transform: 'scale(1)',
     '&:hover': {
-      transform: $hasText ? 'scale(1.05)' : 'scale(1)'
+      transform: $hasText ? 'scale(1.05)' : 'scale(1)',
+      background: $hasText ? '#5a8aff' : '#e0e0e0',
     },
     '&:active': {
       transform: $hasText ? 'scale(0.95)' : 'scale(1)'
@@ -98,11 +100,11 @@ const SendButton = styled('button')<{ $hasText: boolean }>(
   ({ $hasText }) => $hasText && animations.buttonHover
 );
 
-// SVG иконка для кнопки отправки
+// Современная SVG иконка для кнопки отправки
 const SendIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="#6F7AFF" />
-    <path d="M16 12L10 16.5V7.5L16 12Z" fill="white" />
+    <path d="M5 12.5L3 21L21 12L3 3L5 11.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 12H13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -114,22 +116,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Фокус на поле ввода при первом рендере
+  // Автофокус на инпуте при первом рендере и после отправки
   useEffect(() => {
-    if (inputRef.current && isFirstMessage) {
+    if (inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isFirstMessage]);
+  }, [isFirstMessage, loading]);
 
-  // Обработка отправки сообщения
   const handleSend = () => {
     if (message.trim() && !loading) {
       onSendMessage(message);
       setMessage('');
+      // После отправки сообщения, снова фокусируемся на инпуте
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   };
 
-  // Обработка нажатия Enter
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -147,10 +153,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={isFirstMessage ? "Задайте вопрос..." : "Введите сообщение..."}
           disabled={loading}
-          autoFocus={isFirstMessage}
+          autoFocus
         />
-        <SendButton 
-          onClick={handleSend} 
+        <SendButton
+          onClick={handleSend}
           disabled={loading || !message.trim()}
           title="Отправить сообщение"
           $hasText={!!message.trim()}

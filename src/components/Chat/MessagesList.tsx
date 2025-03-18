@@ -6,31 +6,30 @@ import { Message as MessageType } from '../../types/chat';
 const MessagesContainer = styled('div')({
   display: 'flex',
   flexDirection: 'column',
-  padding: '20px 0 100px 0', // Added bottom padding to prevent content from being hidden behind input
+  padding: '20px 10px 120px 10px', // Увеличенный отступ снизу
   overflow: 'auto',
-  maxHeight: 'calc(100vh - 200px)',
-  scrollbarWidth: 'thin',
-  scrollbarColor: '#888 #f1f1f1',
+  maxHeight: 'calc(100vh - 180px)',
   scrollBehavior: 'smooth',
   position: 'relative',
   
+  // Улучшенный стиль скроллбара
   '&::-webkit-scrollbar': {
-    width: '8px'
+    width: '6px'
   },
   
   '&::-webkit-scrollbar-track': {
-    background: '#f1f1f1',
-    borderRadius: '10px'
+    background: 'transparent',
+    margin: '4px 0',
   },
   
   '&::-webkit-scrollbar-thumb': {
-    background: '#888',
-    borderRadius: '10px',
+    background: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: '6px',
     transition: 'background 0.3s ease'
   },
   
   '&::-webkit-scrollbar-thumb:hover': {
-    background: '#555'
+    background: 'rgba(0, 0, 0, 0.3)'
   }
 });
 
@@ -51,7 +50,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
     <MessagesContainer ref={containerRef}>
       {messages.map((message, index) => (
         <Message 
-          key={index} 
+          key={message.id || index} 
           message={message} 
           isLast={index === messages.length - 1}
         />

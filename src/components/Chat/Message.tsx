@@ -9,7 +9,11 @@ interface MessageProps {
   isLast?: boolean;
 }
 
-const animation = css`animation: ${messageAppear} 0.3s ease-out forwards`;
+const animations = {
+  messageAppear: css`
+    animation: ${messageAppear} 0.3s ease-out forwards;
+  `,
+};
 
 const MessageContainer = styled('div')<{ $isUser: boolean }>(
   ({ $isUser }) => ({
@@ -17,17 +21,21 @@ const MessageContainer = styled('div')<{ $isUser: boolean }>(
     justifyContent: $isUser ? 'flex-end' : 'flex-start',
     marginBottom: '16px',
     opacity: 0,
-  }), animation
+    position: 'relative',
+    marginRight: $isUser ? '8px' : '0',
+  }),
+  animations.messageAppear
 );
 
 const MessageBubble = styled('div')<{ $isUser: boolean }>(
   ({ $isUser }) => ({
     maxWidth: '70%',
     padding: '12px 16px',
-    borderRadius: '24px',
-    backgroundColor: $isUser ? '#fff' : '#f0f0f0',
+    borderRadius: $isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+    backgroundColor: $isUser ? '#e9f2ff' : '#f0f0f0',
     boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
+    position: 'relative',
   })
 );
 
@@ -35,25 +43,40 @@ const MessageTextWrapper = styled('div')({
   lineHeight: '1.5',
   color: '#333',
   opacity: 0,
+  wordBreak: 'break-word',
 }, css`animation: ${messageAppear} 0.3s ease-out 0.1s forwards`);
 
 const UserAvatar = styled('div')({
-  width: '32px',
-  height: '32px',
+  width: '48px',
+  height: '48px',
   borderRadius: '50%',
   backgroundColor: '#fff',
-  marginLeft: '8px',
+  marginLeft: '12px',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
-  backgroundImage: 'url("https://i.pravatar.cc/100")',
+  backgroundImage: 'url("https://i.pravatar.cc/150")',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   transition: 'transform 0.3s ease',
+  flexShrink: 0,
   '&:hover': {
-    transform: 'scale(1.1)'
+    transform: 'scale(1.05)'
   }
 });
 
-export const Message: React.FC<MessageProps> = ({ message }) => {
+const AssistantAvatar = styled('div')({
+  width: '48px',
+  height: '48px',
+  borderRadius: '50%',
+  backgroundColor: '#f0f0f0',
+  marginRight: '12px',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundImage: 'url("https://i.pravatar.cc/150?img=8")',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+  flexShrink: 0,
+});
+
+export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
   const isUser = message.sender === 'user';
   const [isVisible, setIsVisible] = useState(false);
 
@@ -66,6 +89,7 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
 
   return (
     <MessageContainer $isUser={isUser}>
+      {!isUser && <AssistantAvatar />}
       <MessageBubble $isUser={isUser}>
         {isVisible && (
           <MessageTextWrapper>
