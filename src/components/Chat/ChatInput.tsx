@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { css } from 'styled-components';
-import { pulseEffect } from '../../animations/keyframes';
+import { pulseEffect, buttonHover } from '../../animations/keyframes';
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
@@ -12,28 +12,38 @@ const animations = {
   pulseEffect: css`
     animation: ${pulseEffect} 2s infinite alternate;
   `,
+  buttonHover: css`
+    animation: ${buttonHover} 0.6s ease infinite;
+  `,
 };
 
-// Контейнер для инпута с анимациями
+// Контейнер для инпута с улучшенными анимациями
+const InputWrapper = styled('div')({
+  position: 'relative',
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '16px 0',
+  marginTop: 'auto'
+});
+
 const InputContainer = styled('div')<{ $isFirstMessage: boolean }>(
   ({ $isFirstMessage }) => ({
-    position: $isFirstMessage ? 'absolute' : 'relative',
-    top: $isFirstMessage ? '50%' : 'auto',
-    left: $isFirstMessage ? '50%' : 'auto',
-    transform: $isFirstMessage ? 'translate(-50%, -50%)' : 'none',
     display: 'flex',
-    width: $isFirstMessage ? '70%' : '100%',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: $isFirstMessage ? '70%' : '100%',
     padding: '8px 16px',
-    marginBottom: $isFirstMessage ? 0 : '16px',
     backgroundColor: '#fff',
     borderRadius: '28px',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
     transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     '&:focus-within': {
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+      boxShadow: '0 3px 10px rgba(106, 113, 235, 0.3)'
     },
     '@media (max-width: 768px)': {
-      width: $isFirstMessage ? '90%' : '100%'
+      maxWidth: $isFirstMessage ? '90%' : '100%'
     }
   }),
   ({ $isFirstMessage }) => $isFirstMessage && animations.pulseEffect
@@ -47,32 +57,40 @@ const Input = styled('input')({
   padding: '10px 12px',
   background: 'transparent',
   borderRadius: '24px',
-  color: '#333'
-});
-
-// Стилизованная кнопка отправки
-const SendButton = styled('button')({
-  width: '36px',
-  height: '36px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  border: 'none',
-  background: 'none',
-  cursor: 'pointer',
+  color: '#333',
   transition: 'transform 0.2s ease',
-  padding: 0,
-  marginLeft: '4px',
-  '&:active': {
-    transform: 'scale(0.95)'
-  },
-  '&:disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed'
+  '&:focus': {
+    transform: 'scale(1.01)'
   }
 });
 
-// SVG иконка для кнопки отправки (как на скриншоте)
+// Стилизованная кнопка отправки с улучшенной анимацией
+const SendButton = styled('button')<{ $hasText: boolean }>(
+  ({ $hasText }) => ({
+    width: '36px',
+    height: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
+    background: 'none',
+    cursor: $hasText ? 'pointer' : 'default',
+    transition: 'transform 0.2s ease, opacity 0.3s ease',
+    padding: 0,
+    marginLeft: '4px',
+    opacity: $hasText ? 1 : 0.5,
+    transform: 'scale(1)',
+    '&:hover': {
+      transform: $hasText ? 'scale(1.05)' : 'scale(1)'
+    },
+    '&:active': {
+      transform: $hasText ? 'scale(0.95)' : 'scale(1)'
+    }
+  }),
+  ({ $hasText }) => $hasText && animations.buttonHover
+);
+
+// SVG иконка для кнопки отправки
 const SendIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="#6F7AFF" />
@@ -86,7 +104,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   isFirstMessage
 }) => {
   const [message, setMessage] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  // Фокус на поле ввода при первом рендере
+  useEffect(() => {
+    if (inputRef.current && isFirstMessage) {
+      inputRef.current.focus();
+    }
+  }, [isFirstMessage]);
+
+  // Обработка отправки сообщения
   const handleSend = () => {
     if (message.trim() && !loading) {
       onSendMessage(message);
@@ -94,6 +121,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  // Обработка нажатия Enter
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -102,22 +130,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <InputContainer $isFirstMessage={isFirstMessage}>
-      <Input
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={isFirstMessage ? "Задайте вопрос..." : "Введите сообщение..."}
-        disabled={loading}
-        autoFocus={isFirstMessage}
-      />
-      <SendButton 
-        onClick={handleSend} 
-        disabled={loading || !message.trim()}
-        title="Отправить сообщение"
-      >
-        <SendIcon />
-      </SendButton>
-    </InputContainer>
+    <InputWrapper>
+      <InputContainer $isFirstMessage={isFirstMessage}>
+        <Input
+          ref={inputRef}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={isFirstMessage ? "Задайте вопрос..." : "Введите сообщение..."}
+          disabled={loading}
+          autoFocus={isFirstMessage}
+        />
+        <SendButton 
+          onClick={handleSend} 
+          disabled={loading || !message.trim()}
+          title="Отправить сообщение"
+          $hasText={!!message.trim()}
+        >
+          <SendIcon />
+        </SendButton>
+      </InputContainer>
+    </InputWrapper>
   );
 };

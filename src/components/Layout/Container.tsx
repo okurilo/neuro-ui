@@ -5,12 +5,7 @@ export const Container = styled('div')({
   flexDirection: 'column',
   height: '100vh',
   width: '100%',
-  padding: '0 16px',
-  boxSizing: 'border-box',
-  background: 'linear-gradient(135deg, #a5c7e9 0%, #b99ad6 100%)',
+  background: 'linear-gradient(120deg, #c4e6c3 0%, #d7c7e9 100%)',
   position: 'relative',
-  overflow: 'hidden',
-  '@media (max-width: 768px)': {
-    padding: '0 8px'
-  }
+  overflow: 'hidden'
 });

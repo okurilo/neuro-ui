@@ -4,12 +4,12 @@ import { keyframes } from 'styled-components';
 export const fadeInMessage = keyframes`
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) scale(0.98);
   }
   
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 `;
 
@@ -80,5 +80,64 @@ export const glowEffect = keyframes`
   }
   100% {
     box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+  }
+`;
+
+// Плавное движение поисковой строки вниз
+export const moveDown = keyframes`
+  from {
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    top: 100%;
+    transform: translate(-50%, -100%);
+  }
+`;
+
+// Анимация печатающегося текста
+export const typeText = keyframes`
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+`;
+
+// Анимация постепенного появления текста
+export const fadeInText = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+// Анимация для кнопок
+export const buttonHover = keyframes`
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+`;
+
+// Анимация для всплывающих подсказок
+export const tooltipFade = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 `;
