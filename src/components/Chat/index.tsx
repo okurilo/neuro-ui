@@ -37,17 +37,18 @@ const ContentContainer = styled('div')({
 // Контейнер для вступительного текста
 const InitialAssistantMessage = styled('div')({
   position: 'fixed',
-  top: '35%',
+  top: '30%',
   left: '50%',
-  transform: 'translate(-50%, -50%)',
+  transform: 'translateX(-50%)',
   opacity: 1,
   transition: 'all 0.5s ease-out',
   maxWidth: '70%',
   textAlign: 'center',
-  
+  width: '100%',
+
   '&.hidden': {
     opacity: 0,
-    transform: 'translate(-50%, 100%)'
+    transform: 'translateX(-50%) translateY(30px)'
   }
 });
 
@@ -62,58 +63,88 @@ const AssistantText = styled('p')({
 const AssistantSubtext = styled('p')({
   fontSize: '16px',
   color: '#666',
-  textAlign: 'center'
+  textAlign: 'center',
+  marginBottom: '16px'
 });
 
-// Индикатор загрузки с анимацией
+// Новый индикатор печати с более элегантной анимацией
 const LoadingIndicator = styled('div')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  position: 'fixed',
+  left: '50%',
+  bottom: '82px',
+  transform: 'translateX(-50%)',
+  zIndex: 5,
+});
+
+// Эффект печатающегося сообщения
+const TypingIndicator = styled('div')({
+  display: 'inline-block',
+  padding: '8px 12px',
+  background: '#f0f0f0',
+  borderRadius: '16px',
+  maxWidth: '100px',
+  minWidth: '40px',
+  position: 'relative',
+});
+
+// Три точки внутри индикатора печати
+const TypingDots = styled('div')({
   display: 'flex',
   justifyContent: 'center',
-  alignItems: 'center',
-  padding: '16px 0',
-  height: '20px',
-  marginBottom: '16px',
-  position: 'fixed',
-  bottom: '90px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  zIndex: 5
+  gap: '4px',
 });
 
-const LoadingDot = styled('div')(
+const TypingDot = styled('span')(
   {
-    width: '8px',
-    height: '8px',
-    margin: '0 4px',
+    width: '6px',
+    height: '6px',
+    backgroundColor: '#666',
     borderRadius: '50%',
-    backgroundColor: '#4a7dff',
-    opacity: 0.6,
+    display: 'inline-block',
   },
-  animations.typing
+  css`
+    animation: ${typing} 1.4s infinite;
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  `
 );
 
 // Компонент подсказки для первого сообщения
-const SuggestionsContainer = styled(Card)({
-  marginTop: '24px',
+const SuggestionsContainer = styled('div')({
+  marginTop: '8px',
   display: 'flex',
-  flexDirection: 'column',
-  gap: '12px',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  gap: '8px',
+  position: 'absolute',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  bottom: '130px',
+  width: '90%',
+  maxWidth: '600px',
+  zIndex: 90
 });
 
 const SuggestionButton = styled('button')({
-  padding: '12px 16px',
-  borderRadius: '12px',
+  padding: '10px 16px',
+  borderRadius: '20px',
   border: '1px solid #e0e0e0',
-  background: '#fff',
-  color: '#333',
+  background: 'rgba(255, 255, 255, 0.9)',
+  color: '#4a7dff',
   fontSize: '14px',
-  textAlign: 'left',
+  fontWeight: 500,
+  textAlign: 'center',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  boxShadow: 'none',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+  backdropFilter: 'blur(4px)',
+  whiteSpace: 'nowrap',
   '&:hover': {
-    backgroundColor: '#f5f5f5',
-    borderColor: '#d0d0d0',
+    backgroundColor: '#f8f9ff',
+    borderColor: '#4a7dff',
+    boxShadow: '0 2px 6px rgba(74, 125, 255, 0.2)',
   }
 });
 
@@ -137,7 +168,7 @@ export const Chat: React.FC = () => {
     } else {
       timer = setTimeout(() => {
         setShowLoading(false);
-      }, 300);
+      }, 500); // Увеличиваем время задержки для более плавного исчезновения
     }
     return () => clearTimeout(timer);
   }, [loading]);
@@ -152,10 +183,14 @@ export const Chat: React.FC = () => {
         <InitialAssistantMessage className={!isFirstMessage ? 'hidden' : ''}>
           <AssistantText>Чем могу помочь?</AssistantText>
           <AssistantSubtext>Спросите меня о заказе справок или других документов</AssistantSubtext>
-          
-          <SuggestionsContainer $shadow={false} $type="default">
+        </InitialAssistantMessage>
+
+        {!isFirstMessage && <MessagesList messages={messages} />}
+
+        {isFirstMessage && (
+          <SuggestionsContainer>
             {suggestions.map((suggestion, index) => (
-              <SuggestionButton 
+              <SuggestionButton
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion)}
               >
@@ -163,22 +198,24 @@ export const Chat: React.FC = () => {
               </SuggestionButton>
             ))}
           </SuggestionsContainer>
-        </InitialAssistantMessage>
-        
-        {!isFirstMessage && <MessagesList messages={messages} />}
-        
+        )}
+
         {showLoading && (
           <LoadingIndicator>
-            <LoadingDot style={{ animationDelay: '0s' }} />
-            <LoadingDot style={{ animationDelay: '0.2s' }} />
-            <LoadingDot style={{ animationDelay: '0.4s' }} />
+            <TypingIndicator>
+              <TypingDots>
+                <TypingDot />
+                <TypingDot />
+                <TypingDot />
+              </TypingDots>
+            </TypingIndicator>
           </LoadingIndicator>
         )}
-        
-        <ChatInput 
-          onSendMessage={sendMessage} 
-          loading={loading} 
-          isFirstMessage={isFirstMessage} 
+
+        <ChatInput
+          onSendMessage={sendMessage}
+          loading={loading}
+          isFirstMessage={isFirstMessage}
         />
       </ContentContainer>
     </Container>

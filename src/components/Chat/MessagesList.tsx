@@ -6,30 +6,29 @@ import { Message as MessageType } from '../../types/chat';
 const MessagesContainer = styled('div')({
   display: 'flex',
   flexDirection: 'column',
-  padding: '20px 10px 120px 10px', // Увеличенный отступ снизу
+  padding: '20px 10px 80px 10px', // Уменьшенный отступ снизу
   overflow: 'auto',
-  maxHeight: 'calc(100vh - 180px)',
+  maxHeight: 'calc(100vh - 150px)',
   scrollBehavior: 'smooth',
   position: 'relative',
-  
-  // Улучшенный стиль скроллбара
+
+  // Улучшенный стиль скроллбара - показывается только при наведении
   '&::-webkit-scrollbar': {
-    width: '6px'
+    width: '4px'
   },
-  
+
   '&::-webkit-scrollbar-track': {
     background: 'transparent',
-    margin: '4px 0',
   },
-  
+
   '&::-webkit-scrollbar-thumb': {
-    background: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: '6px',
+    background: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: '4px',
     transition: 'background 0.3s ease'
   },
-  
-  '&::-webkit-scrollbar-thumb:hover': {
-    background: 'rgba(0, 0, 0, 0.3)'
+
+  '&:hover::-webkit-scrollbar-thumb': {
+    background: 'rgba(0, 0, 0, 0.2)'
   }
 });
 
@@ -49,9 +48,9 @@ export const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
   return (
     <MessagesContainer ref={containerRef}>
       {messages.map((message, index) => (
-        <Message 
-          key={message.id || index} 
-          message={message} 
+        <Message
+          key={message.id || index}
+          message={message}
           isLast={index === messages.length - 1}
         />
       ))}

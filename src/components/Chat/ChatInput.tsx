@@ -19,20 +19,19 @@ const animations = {
 
 const InputWrapper = styled('div')<{ $isFirstMessage: boolean }>(
   ({ $isFirstMessage }) => ({
-    position: $isFirstMessage ? 'fixed' : 'fixed', // Всегда фиксированное позиционирование
+    position: 'fixed', // Всегда фиксированное позиционирование
     top: $isFirstMessage ? '50%' : 'auto',
-    left: $isFirstMessage ? '50%' : '0',
+    left: '0',
     width: '100%',
-    transform: $isFirstMessage ? 'translate(-50%, -50%)' : 'none',
+    transform: $isFirstMessage ? 'translateY(-50%)' : 'none',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     padding: '16px',
     marginTop: 'auto',
-    transition: 'all 0.8s cubic-bezier(0.19, 1, 0.22, 1)',
+    transition: 'all 0.5s ease-in-out',
     zIndex: 100,
     bottom: $isFirstMessage ? 'auto' : 0,
-    background: $isFirstMessage ? 'transparent' : 'linear-gradient(to top, rgb(223 223 223) 60%, rgba(255, 255, 255, 0))',
     // background: $isFirstMessage ? 'transparent' : 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))',
   })
 );
@@ -43,7 +42,7 @@ const InputContainer = styled('div')<{ $isFirstMessage: boolean }>(
     alignItems: 'center',
     width: '100%',
     maxWidth: $isFirstMessage ? '70%' : '800px',
-    padding: '10px 16px',
+    padding: '6px 12px',
     backgroundColor: '#fff',
     borderRadius: '24px',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
