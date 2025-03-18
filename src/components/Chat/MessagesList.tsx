@@ -1,97 +1,61 @@
-import React, { useRef, useEffect } from 'react';
-import styled, { css } from 'styled-components';
+import React, { useEffect, useRef } from 'react';
+import styled from 'styled-components';
 import { Message } from './Message';
 import { Message as MessageType } from '../../types/chat';
-import { fadeIn } from '../../animations/keyframes';
+
+const MessagesContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  padding: '20px 0 100px 0', // Added bottom padding to prevent content from being hidden behind input
+  overflow: 'auto',
+  maxHeight: 'calc(100vh - 200px)',
+  scrollbarWidth: 'thin',
+  scrollbarColor: '#888 #f1f1f1',
+  scrollBehavior: 'smooth',
+  position: 'relative',
+  
+  '&::-webkit-scrollbar': {
+    width: '8px'
+  },
+  
+  '&::-webkit-scrollbar-track': {
+    background: '#f1f1f1',
+    borderRadius: '10px'
+  },
+  
+  '&::-webkit-scrollbar-thumb': {
+    background: '#888',
+    borderRadius: '10px',
+    transition: 'background 0.3s ease'
+  },
+  
+  '&::-webkit-scrollbar-thumb:hover': {
+    background: '#555'
+  }
+});
 
 interface MessagesListProps {
   messages: MessageType[];
 }
 
-const animations = {
-  fadeIn: css`
-    animation: ${fadeIn} 0.5s forwards;
-  `,
-};
-
-const MessagesContainer = styled('div')(
-  {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    overflowY: 'auto',
-    padding: '16px 0',
-    opacity: 0,
-
-    // Стилизация скроллбара
-    '&::-webkit-scrollbar': {
-      width: '6px'
-    },
-    '&::-webkit-scrollbar-track': {
-      background: 'rgba(0, 0, 0, 0.05)',
-      borderRadius: '3px'
-    },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-      borderRadius: '3px',
-      transition: 'background-color 0.3s ease',
-      '&:hover': {
-        backgroundColor: 'rgba(0, 0, 0, 0.3)'
-      }
-    }
-  },
-  animations.fadeIn
-);
-
-const animations2 = {
-  fadeInSlow: css`
-    animation: ${fadeIn} 0.8s forwards;
-  `,
-};
-
-const EmptyStateContainer = styled('div')(
-  {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    textAlign: 'center',
-    opacity: 0,
-    padding: '32px 16px'
-  },
-  animations2.fadeInSlow
-);
-
 export const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Автоскролл к последнему сообщению
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [messages]);
 
-  if (messages.length === 0) {
-    return (
-      <EmptyStateContainer>
-        <h3>Начните общение с AI-ассистентом</h3>
-        <p>Задайте вопрос в поле ниже</p>
-      </EmptyStateContainer>
-    );
-  }
-
   return (
-    <MessagesContainer>
+    <MessagesContainer ref={containerRef}>
       {messages.map((message, index) => (
         <Message 
-          key={message.id} 
+          key={index} 
           message={message} 
-          isLast={index === messages.length - 1} 
+          isLast={index === messages.length - 1}
         />
       ))}
-      <div ref={messagesEndRef} />
     </MessagesContainer>
   );
 };

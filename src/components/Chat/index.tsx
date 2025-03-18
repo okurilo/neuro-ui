@@ -4,7 +4,7 @@ import { Container } from '../Layout/Container';
 import { MessagesList } from './MessagesList';
 import { ChatInput } from './ChatInput';
 import { useChat } from '../../hooks/useChat';
-import { typing, fadeIn } from '../../animations/keyframes';
+import { typing, fadeIn } from '../../animations/chatAnimations';
 
 const animations = {
   typing: css`
@@ -33,30 +33,24 @@ const ContentContainer = styled('div')({
 });
 
 // Контейнер для вступительного текста
-const WelcomeContainer = styled('div')(
-  {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    marginTop: '24px',
-    opacity: 0
-  },
-  animations.fadeIn
-);
-
-const WelcomeTitle = styled('h3')({
-  margin: '0 0 8px 0',
-  fontSize: '20px',
-  fontWeight: '500',
-  color: '#333'
+const InitialAssistantMessage = styled('div')({
+  position: 'fixed',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  opacity: 1,
+  transition: 'all 0.5s ease-out',
+  
+  '&.hidden': {
+    opacity: 0,
+    transform: 'translate(-50%, 100%)'
+  }
 });
 
-const WelcomeSubtitle = styled('p')({
-  margin: 0,
-  fontSize: '16px',
-  color: '#666'
+const AssistantText = styled('p')({
+  fontSize: '18px',
+  color: '#666',
+  textAlign: 'center'
 });
 
 // Индикатор загрузки с анимацией
@@ -66,7 +60,12 @@ const LoadingIndicator = styled('div')({
   alignItems: 'center',
   padding: '16px 0',
   height: '20px',
-  marginBottom: '16px'
+  marginBottom: '16px',
+  position: 'fixed',
+  bottom: '80px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  zIndex: 5
 });
 
 const LoadingDot = styled('div')(
@@ -101,14 +100,11 @@ export const Chat: React.FC = () => {
   return (
     <Container>
       <ContentContainer>
-        {isFirstMessage ? (
-          <WelcomeContainer>
-            <WelcomeTitle>Начните общение с ассистентом</WelcomeTitle>
-            <WelcomeSubtitle>Задайте вопрос в поле выше</WelcomeSubtitle>
-          </WelcomeContainer>
-        ) : (
-          <MessagesList messages={messages} />
-        )}
+        <InitialAssistantMessage className={!isFirstMessage ? 'hidden' : ''}>
+          <AssistantText>Чем могу помочь?</AssistantText>
+        </InitialAssistantMessage>
+        
+        {!isFirstMessage && <MessagesList messages={messages} />}
         
         {showLoading && (
           <LoadingIndicator>

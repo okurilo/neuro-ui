@@ -18,15 +18,23 @@ const animations = {
 };
 
 // Контейнер для инпута с улучшенными анимациями
-const InputWrapper = styled('div')({
-  position: 'relative',
-  width: '100%',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: '16px 0',
-  marginTop: 'auto'
-});
+const InputWrapper = styled('div')<{ $isFirstMessage: boolean }>(
+  ({ $isFirstMessage }) => ({
+    position: $isFirstMessage ? 'fixed' : 'relative',
+    top: $isFirstMessage ? '50%' : 'auto',
+    left: $isFirstMessage ? '50%' : 'auto',
+    transform: $isFirstMessage ? 'translate(-50%, -50%)' : 'none',
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '16px 0',
+    marginTop: 'auto',
+    transition: 'all 0.8s cubic-bezier(0.19, 1, 0.22, 1)',
+    zIndex: 10,
+    bottom: $isFirstMessage ? 'auto' : 0
+  })
+);
 
 const InputContainer = styled('div')<{ $isFirstMessage: boolean }>(
   ({ $isFirstMessage }) => ({
@@ -130,7 +138,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <InputWrapper>
+    <InputWrapper $isFirstMessage={isFirstMessage}>
       <InputContainer $isFirstMessage={isFirstMessage}>
         <Input
           ref={inputRef}
