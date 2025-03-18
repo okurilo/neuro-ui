@@ -4,32 +4,13 @@ import { Container } from '../Layout/Container';
 import { MessagesList } from './MessagesList';
 import { ChatInput } from './ChatInput';
 import { useChat } from '../../hooks/useChat';
-import { Title } from '../../../src/design-system/Title';
-import { fadeIn, typing } from '../../animations/keyframes';
+import { typing } from '../../animations/keyframes';
 
 const animations = {
-  fadeIn: css`
-    animation: ${fadeIn} 1s forwards;
-  `,
-  fadeInDelayed: css`
-    animation: ${fadeIn} 1s forwards 0.5s;
-  `,
   typing: css`
     animation: ${typing} 1s infinite ease-in-out;
   `,
 };
-
-// Анимированный заголовок
-const AnimatedTitle = styled(Title)(
-  {
-    textAlign: 'center',
-    marginBottom: '24px',
-    marginTop: '32px',
-    opacity: 0,
-    fontSize: '2.5rem'
-  },
-  animations.fadeIn
-);
 
 // Индикатор загрузки с анимацией
 const LoadingIndicator = styled('div')({
@@ -52,18 +33,6 @@ const LoadingDot = styled('div')(
   css`animation: ${typing} 1s infinite ease-in-out;`
 );
 
-// Анимированный субтитр
-const Subtitle = styled('p')(
-  {
-    textAlign: 'center',
-    color: '#666',
-    opacity: 0,
-    marginTop: '0',
-    fontSize: '1.1rem'
-  },
-  animations.fadeInDelayed
-);
-
 export const Chat: React.FC = () => {
   const { messages, sendMessage, loading, isFirstMessage } = useChat();
   const [showLoading, setShowLoading] = useState(false);
@@ -83,18 +52,7 @@ export const Chat: React.FC = () => {
 
   return (
     <Container>
-      {isFirstMessage ? (
-        <>
-          <AnimatedTitle $size="H1">
-            AI-ассистент
-          </AnimatedTitle>
-          <Subtitle>
-            Задайте вопрос и получите мгновенный ответ
-          </Subtitle>
-        </>
-      ) : (
-        <MessagesList messages={messages} />
-      )}
+      <MessagesList messages={messages} />
       
       {showLoading && (
         <LoadingIndicator>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Button } from '../../../src/design-system/Button';
-import { pulseEffect, popIn } from '../../animations/keyframes';
+import { pulseEffect } from '../../animations/keyframes';
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
@@ -24,14 +23,14 @@ const InputContainer = styled('div')<{ $isFirstMessage: boolean }>(
     transform: $isFirstMessage ? 'translate(-50%, -50%)' : 'none',
     display: 'flex',
     width: $isFirstMessage ? '70%' : '100%',
-    padding: '12px 16px',
+    padding: '8px 16px',
     marginBottom: $isFirstMessage ? 0 : '16px',
     backgroundColor: '#fff',
-    borderRadius: '24px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    borderRadius: '28px',
+    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
     transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     '&:focus-within': {
-      boxShadow: '0 4px 16px rgba(0, 123, 255, 0.2)'
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
     },
     '@media (max-width: 768px)': {
       width: $isFirstMessage ? '90%' : '100%'
@@ -45,41 +44,40 @@ const Input = styled('input')({
   border: 'none',
   outline: 'none',
   fontSize: '16px',
-  padding: '8px 12px',
+  padding: '10px 12px',
   background: 'transparent',
-  transition: 'transform 0.3s ease',
   borderRadius: '24px',
-  '&:focus': {
-    transform: 'scale(1.01)'
-  }
+  color: '#333'
 });
 
 // Стилизованная кнопка отправки
-const SendButtonWrapper = styled('div')({
+const SendButton = styled('button')({
+  width: '36px',
+  height: '36px',
   display: 'flex',
   alignItems: 'center',
-  marginLeft: '8px',
+  justifyContent: 'center',
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
   transition: 'transform 0.2s ease',
-  transform: 'scale(1)',
+  padding: 0,
+  marginLeft: '4px',
   '&:active': {
     transform: 'scale(0.95)'
+  },
+  '&:disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed'
   }
 });
 
-// Анимированная кнопка
-const AnimatedButton = styled(Button)<{ $hasText: boolean }>(
-  ({ $hasText }) => ({
-    transform: 'scale(1)',
-    transition: 'transform 0.2s ease, background-color 0.3s ease',
-    borderRadius: '50%',
-    '&:hover': {
-      transform: 'scale(1.05)'
-    },
-    '&:active': {
-      transform: 'scale(0.95)'
-    }
-  }),
-  ({ $hasText }) => $hasText && css`animation: ${popIn} 0.3s forwards;`
+// SVG иконка для кнопки отправки (как на скриншоте)
+const SendIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="#6F7AFF" />
+    <path d="M16 12L10 16.5V7.5L16 12Z" fill="white" />
+  </svg>
 );
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -109,22 +107,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={isFirstMessage ? "Задайте вопрос AI-ассистенту..." : "Введите сообщение..."}
+        placeholder={isFirstMessage ? "Задайте вопрос..." : "Введите сообщение..."}
         disabled={loading}
         autoFocus={isFirstMessage}
       />
-      <SendButtonWrapper>
-        <AnimatedButton
-          $type="primary"
-          $size="m"
-          $hasText={!!message.trim()}
-          onClick={handleSend}
-          disabled={loading || !message.trim()}
-          $containsOnlyIcon={true}
-        >
-          Отправить
-        </AnimatedButton>
-      </SendButtonWrapper>
+      <SendButton 
+        onClick={handleSend} 
+        disabled={loading || !message.trim()}
+        title="Отправить сообщение"
+      >
+        <SendIcon />
+      </SendButton>
     </InputContainer>
   );
 };

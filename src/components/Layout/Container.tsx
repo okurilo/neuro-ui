@@ -7,7 +7,7 @@ export const Container = styled('div')({
   width: '100%',
   padding: '0 16px',
   boxSizing: 'border-box',
-  backgroundColor: '#f5f5f5',
+  background: 'linear-gradient(135deg, #a5c7e9 0%, #b99ad6 100%)',
   position: 'relative',
   overflow: 'hidden',
   '@media (max-width: 768px)': {
