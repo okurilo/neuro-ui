@@ -35,8 +35,7 @@ const MessageTextWrapper = styled('div')({
   lineHeight: '1.5',
   color: '#333',
   opacity: 0,
-  // animation: `${messageAppear} 0.3s ease-out 0.1s forwards`
-});
+}, css`animation: ${messageAppear} 0.3s ease-out 0.1s forwards`);
 
 const UserAvatar = styled('div')({
   width: '32px',
