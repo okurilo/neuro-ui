@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Message } from '../types/chat';
-import { chatService } from '../api/chatService';
+import { getHistory, sendMessage } from '../api/chatApi';
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -12,22 +12,27 @@ export const useChat = () => {
   useEffect(() => {
     const loadHistory = async () => {
       setLoading(true);
-      const history = await chatService.getHistory();
-      if (history) {
-        setMessages(history.messages);
-        setSessionId(history.id);
-        setIsFirstMessage(false);
+      try {
+        const history = await getHistory();
+        if (history) {
+          setMessages(history.messages);
+          setSessionId(history.id);
+          setIsFirstMessage(history.messages.length === 0);
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке истории чата:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadHistory();
   }, []);
 
   // Отправка сообщения
-  const sendMessage = async (text: string) => {
+  const sendChatMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
-    
+
     // Добавляем сообщение пользователя в список
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -35,33 +40,33 @@ export const useChat = () => {
       sender: 'user',
       timestamp: Date.now()
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setLoading(true);
-    
+
     try {
       // Отправляем сообщение на сервер
-      const response = await chatService.sendMessage(text, sessionId);
-      
-      // Обновляем ID сессии и добавляем ответ ассистента
+      const response = await sendMessage(text, sessionId);
+
+      // Обновляем ID сессии
       setSessionId(response.sessionId);
-      
-      // Небольшая задержка перед добавлением ответа для более естественного ощущения
+
+      // Небольшая задержка перед добавлением ответа
       setTimeout(() => {
         setMessages(prev => [...prev, response.message]);
         setLoading(false);
       }, 500);
-      
+
       setIsFirstMessage(false);
     } catch (error) {
       console.error('Ошибка при получении ответа:', error);
       setLoading(false);
     }
-  };
+  }, [sessionId]);
 
   return {
     messages,
-    sendMessage,
+    sendMessage: sendChatMessage,
     loading,
     isFirstMessage
   };
