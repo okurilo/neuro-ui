@@ -8,6 +8,7 @@ export const useChat = () => {
   const [sessionId, setSessionId] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
+  const [hasPreviousSession, setHasPreviousSession] = useState(false);
 
   // Загрузка истории при первом рендере
   const loadHistory = useCallback(async (sessionId?: string) => {
@@ -15,9 +16,15 @@ export const useChat = () => {
     try {
       const history = await getHistory(sessionId);
       if (history) {
-        setMessages(history.messages);
+        // Если это продолжение диалога, загружаем сообщения
+        if (sessionId) {
+          setMessages(history.messages);
+          setIsFirstMessage(false);
+        } else {
+          // Если у нас есть ID сессии, но нет сообщений, то установим флаг наличия предыдущей сессии
+          setHasPreviousSession(!!history.id && history.messages.length === 0);
+        }
         setSessionId(history.id);
-        setIsFirstMessage(history.messages.length === 0);
       }
     } catch (error) {
       console.error('Ошибка при загрузке истории чата:', error);
@@ -60,6 +67,7 @@ export const useChat = () => {
       }, 500);
 
       setIsFirstMessage(false);
+      setHasPreviousSession(false);
     } catch (error) {
       console.error('Ошибка при получении ответа:', error);
       setLoading(false);
@@ -71,18 +79,22 @@ export const useChat = () => {
     setMessages([]);
     setSessionId(undefined);
     setIsFirstMessage(true);
+    setHasPreviousSession(false);
   }, []);
 
   // Продолжение предыдущего чата
-  const continueChat = useCallback(async (chatId: string) => {
-    await loadHistory(chatId);
-  }, [loadHistory]);
+  const continueChat = useCallback(async () => {
+    if (sessionId) {
+      await loadHistory(sessionId);
+    }
+  }, [loadHistory, sessionId]);
 
   return {
     messages,
     sendMessage: sendChatMessage,
     loading,
     isFirstMessage,
+    hasPreviousSession,
     resetChat,
     continueChat,
     sessionId

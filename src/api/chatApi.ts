@@ -4,6 +4,15 @@ import { ChatSession, ChatResponse, Message, ContentType } from '../types/chat';
 // Константа для переключения между мок и сервером
 const USE_MOCK_API = true;
 
+// Определяем интерфейс для моковых ответов
+interface MockResponse {
+    text: string;
+    type: ContentType;
+    widget?: any;
+    imageUrl?: string;
+    videoUrl?: string;
+}
+
 export async function getHistory(sessionId?: string): Promise<ChatSession | null> {
     if (USE_MOCK_API) {
         return getMockHistory(sessionId);
@@ -114,6 +123,19 @@ async function sendServerMessage(text: string, sessionId?: string): Promise<Chat
 async function getMockHistory(sessionId?: string): Promise<ChatSession | null> {
     await new Promise(resolve => setTimeout(resolve, 800));
 
+    // Здесь нужно адаптировать мок под наше требование:
+    // Если запрос первоначальный (без sessionId), но у нас есть история - вернуть пустой массив сообщений, но с ID сессии
+
+    // Имитируем наличие предыдущей сессии
+    if (!sessionId) {
+        // Вернем сессию с ID, но без сообщений
+        return {
+            id: 'demo-session-with-history',
+            messages: []
+        };
+    }
+
+    // Если указан ID сессии, значит, пользователь хочет загрузить предыдущий диалог
     if (sessionId === 'demo-session-with-history') {
         return {
             id: 'demo-session-with-history',
@@ -160,14 +182,6 @@ async function sendMockMessage(text: string, sessionId?: string): Promise<ChatRe
             videoUrl: response.type === 'video' ? response.videoUrl : undefined
         }
     };
-}
-
-interface MockResponse {
-    text: string;
-    type: ContentType;
-    widget?: any;
-    imageUrl?: string;
-    videoUrl?: string;
 }
 
 function getMockResponse(text: string): MockResponse {

@@ -5,7 +5,6 @@ import { MessagesList } from './MessagesList';
 import { ChatInput } from './ChatInput';
 import { useChat } from '../../hooks/useChat';
 import { typing, fadeIn } from '../../animations/chatAnimations';
-import { Card } from '../../design-system';
 
 const animations = {
   typing: css`
@@ -180,7 +179,15 @@ const CloseIcon = () => (
 );
 
 export const Chat: React.FC = () => {
-  const { messages, sendMessage, loading, isFirstMessage, resetChat } = useChat();
+  const {
+    messages,
+    sendMessage,
+    loading,
+    isFirstMessage,
+    hasPreviousSession,
+    resetChat,
+    continueChat
+  } = useChat();
   const [showLoading, setShowLoading] = useState(false);
 
   // Варианты предложений для быстрого начала общения
@@ -252,8 +259,10 @@ export const Chat: React.FC = () => {
 
         <ChatInput
           onSendMessage={sendMessage}
+          onContinueChat={continueChat}
           loading={loading}
           isFirstMessage={isFirstMessage}
+          hasPreviousSession={hasPreviousSession}
         />
       </ContentContainer>
     </Container>

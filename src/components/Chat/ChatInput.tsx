@@ -4,8 +4,10 @@ import { pulseEffect, buttonHover } from '../../animations/keyframes';
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
+  onContinueChat?: () => void;
   loading: boolean;
   isFirstMessage: boolean;
+  hasPreviousSession: boolean;
 }
 
 const animations = {
@@ -32,7 +34,6 @@ const InputWrapper = styled('div')<{ $isFirstMessage: boolean }>(
     transition: 'all 0.5s ease-in-out',
     zIndex: 100,
     bottom: $isFirstMessage ? 'auto' : 0,
-    // background: $isFirstMessage ? 'transparent' : 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))',
   })
 );
 
@@ -100,27 +101,30 @@ const SendButton = styled('button')<{ $hasText: boolean }>(
 );
 
 // Кнопка продолжения диалога (слева от ввода)
-const ContinueButton = styled('button')({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '38px',
-  height: '38px',
-  background: 'transparent',
-  border: '1px solid #e0e0e0',
-  borderRadius: '50%',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  marginRight: '6px',
-  '&:hover': {
-    background: 'rgba(0, 0, 0, 0.05)',
-    transform: 'scale(1.05)'
-  },
-  '&:active': {
-    transform: 'scale(0.95)'
-  }
-});
-// Современная SVG иконка для кнопки отправки
+const ContinueButton = styled('button')(
+  ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '38px',
+    height: '38px',
+    background: 'transparent',
+    border: '1px solid #e0e0e0',
+    borderRadius: '50%',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    marginRight: '6px',
+    '&:hover': {
+      background: 'rgba(0, 0, 0, 0.05)',
+      transform: 'scale(1.05)'
+    },
+    '&:active': {
+      transform: 'scale(0.95)'
+    }
+  })
+);
+
+// SVG иконка для кнопки отправки
 const SendIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5 12.5L3 21L21 12L3 3L5 11.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -128,7 +132,7 @@ const SendIcon = () => (
   </svg>
 );
 
-// SVG иконка для кнопки продолжения диалога (белая)
+// SVG иконка для кнопки продолжения диалога
 const HistoryIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 8v4l3 3" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -137,11 +141,12 @@ const HistoryIcon = () => (
   </svg>
 );
 
-
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
+  onContinueChat,
   loading,
-  isFirstMessage
+  isFirstMessage,
+  hasPreviousSession
 }) => {
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -176,11 +181,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   return (
     <InputWrapper $isFirstMessage={isFirstMessage}>
       <InputContainer $isFirstMessage={isFirstMessage}>
-        <ContinueButton
-          title="Продолжить предыдущий диалог"
-        >
-          <HistoryIcon />
-        </ContinueButton>
+        {isFirstMessage && hasPreviousSession && (
+          <ContinueButton
+            title="Продолжить предыдущий диалог"
+            onClick={onContinueChat}
+            disabled={loading}
+          >
+            <HistoryIcon />
+          </ContinueButton>
+        )}
         <Input
           ref={inputRef}
           value={message}
