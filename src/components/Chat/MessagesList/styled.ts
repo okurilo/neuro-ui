@@ -3,14 +3,14 @@ import styled from 'styled-components';
 export const MessagesContainer = styled('div')({
     display: 'flex',
     flexDirection: 'column',
-    padding: '80px 10px 90px 10px',
+    padding: '120px 10px 90px 10px', // Увеличиваем верхний отступ
     overflow: 'auto',
-    maxHeight: 'calc(100vh - 120px)', // Увеличиваем отступ сверху
+    maxHeight: 'calc(100vh - 120px)',
     height: '100vh',
     scrollBehavior: 'smooth',
     position: 'relative',
     backdropFilter: "blur(5px)",
-    maskImage: "linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)", // Плавное затухание скролла сверху и снизу
+    maskImage: "linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
 
     // Стиль скроллбара в стиле macOS
     '&::-webkit-scrollbar': {
@@ -42,9 +42,7 @@ export const DateSeparator = styled('div')({
     alignItems: 'center',
     justifyContent: 'center',
     margin: '24px 0 16px',
-    position: 'sticky',
-    top: '20px',
-    zIndex: 10
+    position: 'relative'
 });
 
 export const DatePill = styled('div')({
@@ -59,7 +57,8 @@ export const DatePill = styled('div')({
     color: '#555',
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '6px'
+    gap: '6px',
+    zIndex: 1
 });
 // export const DatePill = styled('div')({
 //     background: 'rgba(255, 255, 255, 0.9)',
