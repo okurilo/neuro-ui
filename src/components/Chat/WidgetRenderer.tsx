@@ -17,19 +17,19 @@ const WidgetContainer = styled('div')({
 });
 
 const createWidgetComponent = (widget: any) => {
-    // Если widget не содержит value, значит это непосредственно виджет
-    const widgetData = widget.value ? widget.value : widget;
+    // Просто рендерим компонент на основе его типа, без дополнительных проверок структуры
+    if (!widget) return null;
 
-    switch (widgetData.type) {
+    switch (widget.type) {
         case 'Container':
             return (
                 <div style={{
                     display: 'flex',
-                    flexDirection: widgetData.props?.direction || 'column',
-                    position: widgetData.props?.position || 'default',
+                    flexDirection: widget.props?.direction || 'column',
+                    position: widget.props?.position || 'default',
                     gap: '12px'
                 }}>
-                    {widgetData.children?.map((child: any, index: number) => (
+                    {widget.children?.map((child: any, index: number) => (
                         <React.Fragment key={child.id || index}>
                             {createWidgetComponent(child)}
                         </React.Fragment>
@@ -37,24 +37,24 @@ const createWidgetComponent = (widget: any) => {
                 </div>
             );
         case 'Text':
-            return <Text variant="bodyRegular">{widgetData.props?.text}</Text>;
+            return <Text variant="bodyRegular">{widget.props?.text}</Text>;
         case 'Title':
         case 'H1':
         case 'H2':
         case 'H3':
-            const titleSize = getHeadingSize(widgetData.type);
-            const titleText = widgetData.props?.text || "";
+            const titleSize = getHeadingSize(widget.type);
+            const titleText = widget.props?.text || "";
             return <Title $size={titleSize}>{titleText}</Title>;
         case 'Button':
             return (
-                <Button $type="primary" $size={widgetData.props?.size || "m"}>
-                    {widgetData.props?.text}
+                <Button $type="primary" $size={widget.props?.size || "m"}>
+                    {widget.props?.text}
                 </Button>
             );
         case 'Input':
             return <input
                 type="text"
-                placeholder={widgetData.props?.placeholder}
+                placeholder={widget.props?.placeholder}
                 style={{
                     padding: '10px 12px',
                     borderRadius: '4px',
@@ -64,7 +64,7 @@ const createWidgetComponent = (widget: any) => {
                 }}
             />;
         default:
-            return <div>Неподдерживаемый тип виджета: {widgetData.type}</div>;
+            return <div>Неподдерживаемый тип виджета: {widget.type}</div>;
     }
 };
 

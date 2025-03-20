@@ -89,6 +89,7 @@ const ImageIcon = () => (
 );
 
 export const ContentRenderer: React.FC<ContentRendererProps> = ({ message }) => {
+    // Проверяем только тип сообщения, не вдаваясь в структуру
     switch (message.type) {
         case 'widget':
             return <WidgetRenderer widget={message.widget} />;
