@@ -1,8 +1,9 @@
+// src/components/Chat/Message.tsx
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
-import { Text } from '../../design-system/Text';
 import { Message as MessageType } from '../../types/chat';
 import { messageAppear } from '../../animations/chatAnimations';
+import { ContentRenderer } from './ContentRenderer';
 
 interface MessageProps {
   message: MessageType;
@@ -27,9 +28,9 @@ const MessageContainer = styled('div')<{ $isUser: boolean }>(
   animations.messageAppear
 );
 
-const MessageBubble = styled('div')<{ $isUser: boolean }>(
-  ({ $isUser }) => ({
-    maxWidth: '70%',
+const MessageBubble = styled('div')<{ $isUser: boolean; $contentType: string }>(
+  ({ $isUser, $contentType }) => ({
+    maxWidth: $contentType !== 'text' ? '85%' : '70%',
     padding: '12px 16px',
     borderRadius: $isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
     backgroundColor: $isUser ? '#e9f2ff' : '#f0f0f0',
@@ -79,6 +80,7 @@ const AssistantAvatar = styled('div')({
 export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
   const isUser = message.sender === 'user';
   const [isVisible, setIsVisible] = useState(false);
+  const contentType = message.type || 'text';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -90,12 +92,10 @@ export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
   return (
     <MessageContainer $isUser={isUser}>
       {!isUser && <AssistantAvatar />}
-      <MessageBubble $isUser={isUser}>
+      <MessageBubble $isUser={isUser} $contentType={contentType}>
         {isVisible && (
           <MessageTextWrapper>
-            <Text variant="bodyRegular">
-              {message.text}
-            </Text>
+            <ContentRenderer message={message} />
           </MessageTextWrapper>
         )}
       </MessageBubble>

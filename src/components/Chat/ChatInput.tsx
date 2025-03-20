@@ -4,8 +4,10 @@ import { pulseEffect, buttonHover } from '../../animations/keyframes';
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
+  onContinueChat?: () => void;
   loading: boolean;
   isFirstMessage: boolean;
+  showContinueButton?: boolean;
 }
 
 const animations = {
@@ -19,20 +21,14 @@ const animations = {
 
 const InputWrapper = styled('div')<{ $isFirstMessage: boolean }>(
   ({ $isFirstMessage }) => ({
-    position: 'fixed', // Всегда фиксированное позиционирование
-    top: $isFirstMessage ? '50%' : 'auto',
-    left: '0',
+    position: 'relative',
     width: '100%',
-    transform: $isFirstMessage ? 'translateY(-50%)' : 'none',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     padding: '16px',
-    marginTop: 'auto',
-    transition: 'all 0.5s ease-in-out',
-    zIndex: 100,
-    bottom: $isFirstMessage ? 'auto' : 0,
-    // background: $isFirstMessage ? 'transparent' : 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))',
+    // marginTop: 'auto',
+    transition: 'all 0.3s ease',
   })
 );
 
@@ -41,12 +37,12 @@ const InputContainer = styled('div')<{ $isFirstMessage: boolean }>(
     display: 'flex',
     alignItems: 'center',
     width: '100%',
-    maxWidth: $isFirstMessage ? '70%' : '800px',
+    maxWidth: $isFirstMessage ? '600px' : '800px',
     padding: '6px 12px',
     backgroundColor: '#fff',
     borderRadius: '24px',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
-    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    transition: 'all 0.3s ease',
     '&:focus-within': {
       boxShadow: '0 4px 12px rgba(106, 113, 235, 0.3)'
     },
@@ -72,25 +68,31 @@ const Input = styled('input')({
   }
 });
 
-const SendButton = styled('button')<{ $hasText: boolean }>(
-  ({ $hasText }) => ({
+const ButtonsContainer = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px'
+});
+
+const IconButton = styled('button')<{ $color?: string; $hasText?: boolean }>(
+  ({ $color = '#4a7dff', $hasText = true }) => ({
     width: '42px',
     height: '42px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     border: 'none',
-    background: $hasText ? '#4a7dff' : '#e0e0e0',
+    background: $hasText ? $color : '#e0e0e0',
     borderRadius: '50%',
     cursor: $hasText ? 'pointer' : 'default',
     transition: 'all 0.2s ease',
     padding: 0,
-    marginLeft: '8px',
     opacity: $hasText ? 1 : 0.6,
     transform: 'scale(1)',
     '&:hover': {
       transform: $hasText ? 'scale(1.05)' : 'scale(1)',
-      background: $hasText ? '#5a8aff' : '#e0e0e0',
+      background: $hasText ? $color : '#e0e0e0',
+      filter: $hasText ? 'brightness(1.1)' : 'none',
     },
     '&:active': {
       transform: $hasText ? 'scale(0.95)' : 'scale(1)'
@@ -99,7 +101,29 @@ const SendButton = styled('button')<{ $hasText: boolean }>(
   ({ $hasText }) => $hasText && animations.buttonHover
 );
 
-// Современная SVG иконка для кнопки отправки
+// Кнопка продолжения диалога (слева от ввода)
+const ContinueButton = styled('button')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '38px',
+  height: '38px',
+  background: 'transparent',
+  border: '1px solid #e0e0e0',
+  borderRadius: '50%',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  marginRight: '6px',
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.05)',
+    transform: 'scale(1.05)'
+  },
+  '&:active': {
+    transform: 'scale(0.95)'
+  }
+});
+
+// SVG иконка для кнопки отправки
 const SendIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5 12.5L3 21L21 12L3 3L5 11.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -107,10 +131,21 @@ const SendIcon = () => (
   </svg>
 );
 
+// SVG иконка для кнопки продолжения диалога (белая)
+const HistoryIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 8v4l3 3" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3.05 11a9 9 0 1 1 .5 4" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3 16V8h8" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
+  onContinueChat,
   loading,
-  isFirstMessage
+  isFirstMessage,
+  showContinueButton = false
 }) => {
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +180,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   return (
     <InputWrapper $isFirstMessage={isFirstMessage}>
       <InputContainer $isFirstMessage={isFirstMessage}>
+        {/* Кнопка продолжения диалога теперь слева */}
+        {showContinueButton && onContinueChat && (
+          <ContinueButton
+            onClick={onContinueChat}
+            title="Продолжить предыдущий диалог"
+          >
+            <HistoryIcon />
+          </ContinueButton>
+        )}
+
         <Input
           ref={inputRef}
           value={message}
@@ -154,14 +199,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           disabled={loading}
           autoFocus
         />
-        <SendButton
+
+        {/* Кнопка отправки справа */}
+        <IconButton
           onClick={handleSend}
           disabled={loading || !message.trim()}
           title="Отправить сообщение"
           $hasText={!!message.trim()}
         >
           <SendIcon />
-        </SendButton>
+        </IconButton>
       </InputContainer>
     </InputWrapper>
   );

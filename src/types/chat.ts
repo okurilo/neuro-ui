@@ -1,4 +1,7 @@
+// src/types/chat.ts
 // Типы данных для чата
+
+export type ContentType = 'text' | 'widget' | 'image' | 'video';
 
 // Тип сообщения
 export interface Message {
@@ -6,6 +9,10 @@ export interface Message {
   text: string;
   sender: 'user' | 'assistant';
   timestamp: number;
+  type?: ContentType;
+  widget?: any;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 // Тип сессии чата

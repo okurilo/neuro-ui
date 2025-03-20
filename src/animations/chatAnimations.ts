@@ -1,6 +1,17 @@
+// src/animations/chatAnimations.ts
 import { keyframes } from 'styled-components';
 
-// Simplified fade-in animation
+// Анимация для перемещения инпута из центра вниз
+export const moveInputToBottom = keyframes`
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(40vh);
+  }
+`;
+
+// Существующие анимации оставляем
 export const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -12,7 +23,6 @@ export const fadeIn = keyframes`
   }
 `;
 
-// Enhanced typing animation for loading dots
 export const typing = keyframes`
   0%, 20% { 
     opacity: 0.3;
@@ -28,7 +38,6 @@ export const typing = keyframes`
   }
 `;
 
-// Smooth message appearance animation
 export const messageAppear = keyframes`
   from {
     opacity: 0;
@@ -40,7 +49,6 @@ export const messageAppear = keyframes`
   }
 `;
 
-// Pulse animation for loading indicator
 export const pulseBorder = keyframes`
   0% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
   50% { box-shadow: 0 2px 12px rgba(74, 125, 255, 0.15); }

@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styled, { css } from 'styled-components';
-import { Container } from '../../components/Layout/Container';
+import { Container } from '../Layout/Container';
 import { MessagesList } from './MessagesList';
 import { ChatInput } from './ChatInput';
 import { useChat } from '../../hooks/useChat';
-import { typing, fadeIn } from '../../animations/chatAnimations';
-import { Card } from '../../design-system';
+import { typing, fadeIn, moveInputToBottom } from '../../animations/chatAnimations';
 
 const animations = {
   typing: css`
@@ -14,82 +13,122 @@ const animations = {
   fadeIn: css`
     animation: ${fadeIn} 0.5s ease-out forwards;
   `,
+  moveInputToBottom: css`
+    animation: ${moveInputToBottom} 0.5s ease-out forwards;
+  `
 };
 
-// Основной контейнер для содержимого
+// Основной контейнер страницы
 const ContentContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  maxWidth: '900px',
+  margin: '0 auto',
+  padding: '16px',
+  boxSizing: 'border-box',
+  height: '100vh',
+  '@media (max-width: 768px)': {
+    padding: '8px'
+  }
+});
+
+// Контейнер для чата с сообщениями
+const ChatContainer = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
   width: '100%',
-  maxWidth: '900px',
-  margin: '0 auto',
-  padding: '0 16px',
-  boxSizing: 'border-box',
   position: 'relative',
-  overflow: 'hidden',
-  height: '100vh',
-  '@media (max-width: 768px)': {
-    padding: '0 8px'
-  }
+  overflow: 'hidden'
 });
 
-// Контейнер для вступительного текста
-const InitialAssistantMessage = styled('div')({
-  position: 'fixed',
-  top: '30%',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  opacity: 1,
-  transition: 'all 0.5s ease-out',
-  maxWidth: '70%',
-  textAlign: 'center',
+// Начальный экран - занимает всю высоту
+const InitialScreen = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  height: '100%',
+  position: 'relative',
+});
+
+// Верхний блок с заголовком
+const HeaderContainer = styled('div')({
   width: '100%',
-
-  '&.hidden': {
-    opacity: 0,
-    transform: 'translateX(-50%) translateY(30px)'
-  }
-});
-
-const AssistantText = styled('p')({
-  fontSize: '24px',
-  fontWeight: 500,
-  color: '#333',
   textAlign: 'center',
-  margin: '0 0 16px 0'
+  marginTop: '15vh', // Отступ сверху примерно 15% высоты экрана
+  opacity: 1,
+  transition: 'opacity 0.3s ease-out'
 });
 
+// Центральный блок с полем ввода
+const InputContainer = styled('div')<{ $isAnimating: boolean }>(
+  ({ $isAnimating }) => ({
+    width: '100%',
+    maxWidth: '600px',
+    margin: '0 auto',
+    position: $isAnimating ? 'absolute' : 'relative',
+    top: $isAnimating ? '50%' : 'auto',
+    left: $isAnimating ? '50%' : 'auto',
+    transform: $isAnimating ? 'translate(-50%, -50%)' : 'none',
+    zIndex: 10
+  }),
+  ({ $isAnimating }) => $isAnimating && animations.moveInputToBottom
+);
+
+// Нижний блок с подсказками
+const SuggestionsContainer = styled('div')({
+  width: '100%',
+  marginBottom: '15vh', // Отступ снизу примерно 15% высоты экрана
+  opacity: 1,
+  transition: 'opacity 0.3s ease-out'
+});
+
+// Контейнер с подсказками
+const SuggestionsWrapper = styled('div')({
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  gap: '8px',
+  maxWidth: '700px',
+  margin: '0 auto',
+});
+
+// Стили для заголовка
+const AssistantText = styled('h1')({
+  fontSize: '28px',
+  fontWeight: 600,
+  color: '#333',
+  margin: '0 0 16px 0',
+});
+
+// Стили для подзаголовка
 const AssistantSubtext = styled('p')({
   fontSize: '16px',
   color: '#666',
-  textAlign: 'center',
-  marginBottom: '16px'
+  margin: '0',
 });
 
-// Новый индикатор печати с более элегантной анимацией
+// Индикатор загрузки
 const LoadingIndicator = styled('div')({
-  display: 'inline-flex',
-  alignItems: 'center',
-  position: 'fixed',
-  left: '50%',
-  bottom: '82px',
-  transform: 'translateX(-50%)',
-  zIndex: 5,
+  display: 'flex',
+  justifyContent: 'center',
+  marginBottom: '12px',
+  position: 'relative',
+  zIndex: 5
 });
 
-// Эффект печатающегося сообщения
+// Индикатор печати
 const TypingIndicator = styled('div')({
-  display: 'inline-block',
-  padding: '8px 12px',
+  display: 'inline-flex',
+  padding: '8px 16px',
   background: '#f0f0f0',
   borderRadius: '16px',
   maxWidth: '100px',
-  minWidth: '40px',
-  position: 'relative',
 });
 
-// Три точки внутри индикатора печати
+// Анимированные точки
 const TypingDots = styled('div')({
   display: 'flex',
   justifyContent: 'center',
@@ -111,22 +150,7 @@ const TypingDot = styled('span')(
   `
 );
 
-// Компонент подсказки для первого сообщения
-const SuggestionsContainer = styled('div')({
-  marginTop: '8px',
-  display: 'flex',
-  flexWrap: 'wrap',
-  justifyContent: 'center',
-  gap: '8px',
-  position: 'absolute',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  bottom: '130px',
-  width: '90%',
-  maxWidth: '600px',
-  zIndex: 90
-});
-
+// Кнопки-подсказки 
 const SuggestionButton = styled('button')({
   padding: '10px 16px',
   borderRadius: '20px',
@@ -148,16 +172,60 @@ const SuggestionButton = styled('button')({
   }
 });
 
-export const Chat: React.FC = () => {
-  const { messages, sendMessage, loading, isFirstMessage } = useChat();
-  const [showLoading, setShowLoading] = useState(false);
+// Кнопка закрытия чата
+const CloseButton = styled('button')({
+  position: 'absolute',
+  top: '0',
+  right: '0',
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  background: '#fff',
+  border: 'none',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  zIndex: 1000,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: '#f0f0f0',
+    transform: 'scale(1.1)'
+  }
+});
 
-  // Варианты предложений для быстрого начала общения
+// Иконка закрытия
+const CloseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 4L4 12" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 4L12 12" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+export const Chat: React.FC = () => {
+  const {
+    messages,
+    sendMessage,
+    loading,
+    isFirstMessage,
+    resetChat,
+    continueChat,
+    sessionId
+  } = useChat();
+
+  const [showLoading, setShowLoading] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showChatScreen, setShowChatScreen] = useState(false);
+
+  // Обновленные варианты предложений
   const suggestions = [
-    'Расскажи про справки для посольства',
-    'Как заказать справку?',
+    'Что ты умеешь делать?',
+    'Как получить справку с места работы?',
+    'Какая сегодня погода?',
     'Какие справки можно заказать?',
-    'Сколько делается справка с датой приема?'
+    'Сколько человек в моей команде?',
+    'Сколько дней отпуска мне доступно?'
   ];
 
   // Управление индикатором загрузки
@@ -168,55 +236,139 @@ export const Chat: React.FC = () => {
     } else {
       timer = setTimeout(() => {
         setShowLoading(false);
-      }, 500); // Увеличиваем время задержки для более плавного исчезновения
+      }, 500);
     }
     return () => clearTimeout(timer);
   }, [loading]);
 
+  // Управление анимацией и переключением экранов
+  useEffect(() => {
+    if (!isFirstMessage && !showChatScreen) {
+      setIsAnimating(true);
+
+      // Небольшая задержка, чтобы анимация успела отработать
+      const timer = setTimeout(() => {
+        setShowChatScreen(true);
+        setIsAnimating(false);
+      }, 500); // Время должно совпадать с продолжительностью анимации
+
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstMessage, showChatScreen]);
+
   const handleSuggestionClick = (suggestion: string) => {
-    sendMessage(suggestion);
+    setIsAnimating(true);
+    setTimeout(() => {
+      sendMessage(suggestion);
+    }, 300); // Немного задержки для лучшего визуального эффекта
+  };
+
+  const handleContinueChat = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      continueChat('demo-session-with-history');
+    }, 300);
+  };
+
+  const handleCloseChat = () => {
+    setShowChatScreen(false);
+    resetChat();
   };
 
   return (
     <Container>
       <ContentContainer>
-        <InitialAssistantMessage className={!isFirstMessage ? 'hidden' : ''}>
-          <AssistantText>Чем могу помочь?</AssistantText>
-          <AssistantSubtext>Спросите меня о заказе справок или других документов</AssistantSubtext>
-        </InitialAssistantMessage>
+        {isFirstMessage && !isAnimating && !showChatScreen ? (
+          // Начальный экран с заголовком посередине и подсказками внизу
+          <InitialScreen>
+            {/* Заголовок вверху */}
+            <HeaderContainer>
+              <AssistantText>Чем я могу помочь?</AssistantText>
+              <AssistantSubtext>Готов ответить на любой ваш вопрос</AssistantSubtext>
+            </HeaderContainer>
 
-        {!isFirstMessage && <MessagesList messages={messages} />}
+            {/* Поле ввода посередине */}
+            <InputContainer $isAnimating={isAnimating}>
+              <ChatInput
+                onSendMessage={sendMessage}
+                onContinueChat={handleContinueChat}
+                loading={loading}
+                isFirstMessage={true}
+                showContinueButton={true}
+              />
+            </InputContainer>
 
-        {isFirstMessage && (
-          <SuggestionsContainer>
-            {suggestions.map((suggestion, index) => (
-              <SuggestionButton
-                key={index}
-                onClick={() => handleSuggestionClick(suggestion)}
-              >
-                {suggestion}
-              </SuggestionButton>
-            ))}
-          </SuggestionsContainer>
+            {/* Подсказки внизу */}
+            <SuggestionsContainer>
+              <SuggestionsWrapper>
+                {suggestions.map((suggestion, index) => (
+                  <SuggestionButton
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    {suggestion}
+                  </SuggestionButton>
+                ))}
+              </SuggestionsWrapper>
+            </SuggestionsContainer>
+          </InitialScreen>
+        ) : (
+          // Экран чата с сообщениями или анимация перехода
+          <>
+            {!showChatScreen && isAnimating && (
+              <InitialScreen>
+                <HeaderContainer style={{ opacity: 0 }}>
+                  <AssistantText>Чем я могу помочь?</AssistantText>
+                </HeaderContainer>
+
+                <InputContainer $isAnimating={isAnimating}>
+                  <ChatInput
+                    onSendMessage={sendMessage}
+                    loading={loading}
+                    isFirstMessage={true}
+                    showContinueButton={false}
+                  />
+                </InputContainer>
+
+                <SuggestionsContainer style={{ opacity: 0 }}>
+                  <SuggestionsWrapper>
+                    {suggestions.map((suggestion, index) => (
+                      <SuggestionButton key={index}>{suggestion}</SuggestionButton>
+                    ))}
+                  </SuggestionsWrapper>
+                </SuggestionsContainer>
+              </InitialScreen>
+            )}
+
+            {showChatScreen && (
+              <ChatContainer>
+                <CloseButton onClick={handleCloseChat} title="Закрыть чат">
+                  <CloseIcon />
+                </CloseButton>
+
+                <MessagesList messages={messages} />
+
+                {showLoading && (
+                  <LoadingIndicator>
+                    <TypingIndicator>
+                      <TypingDots>
+                        <TypingDot />
+                        <TypingDot />
+                        <TypingDot />
+                      </TypingDots>
+                    </TypingIndicator>
+                  </LoadingIndicator>
+                )}
+
+                <ChatInput
+                  onSendMessage={sendMessage}
+                  loading={loading}
+                  isFirstMessage={false}
+                />
+              </ChatContainer>
+            )}
+          </>
         )}
-
-        {showLoading && (
-          <LoadingIndicator>
-            <TypingIndicator>
-              <TypingDots>
-                <TypingDot />
-                <TypingDot />
-                <TypingDot />
-              </TypingDots>
-            </TypingIndicator>
-          </LoadingIndicator>
-        )}
-
-        <ChatInput
-          onSendMessage={sendMessage}
-          loading={loading}
-          isFirstMessage={isFirstMessage}
-        />
       </ContentContainer>
     </Container>
   );
