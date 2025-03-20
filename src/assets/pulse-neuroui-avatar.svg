@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Фон аватара - градиент сине-голубой -->
+  <defs>
+    <linearGradient id="avatarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0052CC" />
+      <stop offset="100%" stop-color="#00A3E0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Фоновый круг -->
+  <circle cx="50" cy="50" r="48" fill="url(#avatarGradient)" />
+  
+  <!-- Декоративные элементы - волнистые линии -->
+  <path d="M25,30 Q35,25 45,30 T65,30 T85,30" stroke="#ffffff" fill="none" stroke-width="2" opacity="0.6" />
+  <path d="M15,40 Q25,35 35,40 T55,40 T75,40" stroke="#ffffff" fill="none" stroke-width="2" opacity="0.4" />
+  <path d="M20,50 Q30,45 40,50 T60,50 T80,50" stroke="#ffffff" fill="none" stroke-width="2" opacity="0.5" />
+  
+  <!-- Круг в центре для текста -->
+  <circle cx="50" cy="50" r="30" fill="#ffffff" opacity="0.9" />
+  
+  <!-- Текст "Pulse" -->
+  <text x="50" y="45" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#0052CC">Pulse</text>
+  
+  <!-- Текст "NeuroUI" -->
+  <text x="50" y="60" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#0052CC">NeuroUI</text>
+  
+  <!-- Небольшой стилизованный значок мозга или нейрона -->
+  <circle cx="50" cy="28" r="3" fill="#0052CC" />
+  <circle cx="42" cy="32" r="2" fill="#0052CC" />
+  <circle cx="58" cy="32" r="2" fill="#0052CC" />
+  <path d="M40,32 L50,28 L60,32" stroke="#0052CC" fill="none" stroke-width="1" />
+</svg>

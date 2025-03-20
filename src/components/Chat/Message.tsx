@@ -4,6 +4,10 @@ import styled, { css } from 'styled-components';
 import { Message as MessageType } from '../../types/chat';
 import { messageAppear } from '../../animations/chatAnimations';
 import { ContentRenderer } from './ContentRenderer';
+import { Avatar } from '@pulse/ui/components/Avatar';
+import { useUser, useUserBasicPhoto } from '@sber-hrp-core/api-user/hooks';
+import { getAvatar } from './getAvatar';
+import pulseNeuroui from "../../assets/pulse-neuroui-avatar.svg";
 
 interface MessageProps {
   message: MessageType;
@@ -47,33 +51,9 @@ const MessageTextWrapper = styled('div')({
   wordBreak: 'break-word',
 }, css`animation: ${messageAppear} 0.3s ease-out 0.1s forwards`);
 
-const UserAvatar = styled('div')({
-  width: '48px',
-  height: '48px',
-  borderRadius: '50%',
-  backgroundColor: '#fff',
+const AvatarWrapper = styled('div')({
   marginLeft: '12px',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundImage: 'url("https://i.pravatar.cc/150")',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  transition: 'transform 0.3s ease',
-  flexShrink: 0,
-  '&:hover': {
-    transform: 'scale(1.05)'
-  }
-});
-
-const AssistantAvatar = styled('div')({
-  width: '48px',
-  height: '48px',
-  borderRadius: '50%',
-  backgroundColor: '#f0f0f0',
   marginRight: '12px',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundImage: 'url("https://i.pravatar.cc/150?img=8")',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
   flexShrink: 0,
 });
 
@@ -81,6 +61,13 @@ export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
   const isUser = message.sender === 'user';
   const [isVisible, setIsVisible] = useState(false);
   const contentType = message.type || 'text';
+
+  // Получаем только данные для аватара
+  const { user } = useUser();
+  const basicPhoto = useUserBasicPhoto();
+
+  // Получаем URL аватара пользователя с помощью функции getAvatar
+  const avatarSrc = getAvatar(basicPhoto, user?.personUuid);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -91,7 +78,15 @@ export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
 
   return (
     <MessageContainer $isUser={isUser}>
-      {!isUser && <AssistantAvatar />}
+      {!isUser && (
+        <AvatarWrapper>
+          <Avatar
+            $size="m"
+            $initials="PN"
+            $src={pulseNeuroui}
+          />
+        </AvatarWrapper>
+      )}
       <MessageBubble $isUser={isUser} $contentType={contentType}>
         {isVisible && (
           <MessageTextWrapper>
@@ -99,7 +94,15 @@ export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
           </MessageTextWrapper>
         )}
       </MessageBubble>
-      {isUser && <UserAvatar />}
+      {isUser && (
+        <AvatarWrapper>
+          <Avatar
+            $size="m"
+            $src={avatarSrc}
+            $initials="U"
+          />
+        </AvatarWrapper>
+      )}
     </MessageContainer>
   );
 };
