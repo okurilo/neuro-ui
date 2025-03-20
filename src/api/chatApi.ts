@@ -24,8 +24,8 @@ export async function sendMessage(text: string, sessionId?: string): Promise<Cha
 async function getServerHistory(sessionId?: string): Promise<ChatSession | null> {
     try {
         const url = sessionId
-            ? `/configurator/api/v4/chat/history/${sessionId}`
-            : '/configurator/api/v4/chat/history';
+            ? `/app-web/configurator/api/v4/chat/history/${sessionId}`
+            : '/app-web/configurator/api/v4/chat/history';
 
         const response = await fetch(url);
         if (!response.ok) return null;
@@ -73,7 +73,7 @@ async function sendServerMessage(text: string, sessionId?: string): Promise<Chat
             requestBody.chatId = sessionId;
         }
 
-        const response = await fetch('/configurator/api/v4/chat/say', {
+        const response = await fetch('/app-web/configurator/api/v4/chat/say', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
