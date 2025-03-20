@@ -148,8 +148,39 @@ const SuggestionButton = styled('button')({
   }
 });
 
+// Кнопка закрытия чата
+const CloseButton = styled('button')({
+  position: 'absolute',
+  top: '10px',
+  right: '20px',
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  background: '#fff',
+  border: 'none',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  zIndex: 1000,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: '#f0f0f0',
+    transform: 'scale(1.1)'
+  }
+}, animations.fadeIn);
+
+// Иконка закрытия
+const CloseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 4L4 12" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 4L12 12" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 export const Chat: React.FC = () => {
-  const { messages, sendMessage, loading, isFirstMessage } = useChat();
+  const { messages, sendMessage, loading, isFirstMessage, resetChat } = useChat();
   const [showLoading, setShowLoading] = useState(false);
 
   // Варианты предложений для быстрого начала общения
@@ -181,6 +212,11 @@ export const Chat: React.FC = () => {
 
   return (
     <Container>
+      {!isFirstMessage &&
+        <CloseButton onClick={resetChat} title="Закрыть чат">
+          <CloseIcon />
+        </CloseButton>}
+
       <ContentContainer>
         <InitialAssistantMessage className={!isFirstMessage ? 'hidden' : ''}>
           <AssistantText>Чем могу помочь?</AssistantText>

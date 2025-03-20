@@ -1,24 +1,17 @@
 // src/api/chatApi.ts
-
-import { ChatSession, ChatResponse, Message } from '../types/chat';
+import { ChatSession, ChatResponse, Message, ContentType } from '../types/chat';
 
 // Константа для переключения между мок и сервером
-const USE_MOCK_API = true; // Просто поменяйте на false чтобы использовать сервер
+const USE_MOCK_API = true;
 
-/**
- * Получение истории чата
- */
-export async function getHistory(): Promise<ChatSession | null> {
+export async function getHistory(sessionId?: string): Promise<ChatSession | null> {
     if (USE_MOCK_API) {
-        return getMockHistory();
+        return getMockHistory(sessionId);
     } else {
-        return getServerHistory();
+        return getServerHistory(sessionId);
     }
 }
 
-/**
- * Отправка сообщения в чат
- */
 export async function sendMessage(text: string, sessionId?: string): Promise<ChatResponse> {
     if (USE_MOCK_API) {
         return sendMockMessage(text, sessionId);
@@ -27,20 +20,49 @@ export async function sendMessage(text: string, sessionId?: string): Promise<Cha
     }
 }
 
-// ==================== Реализация серверного API ====================
-
-async function getServerHistory(): Promise<ChatSession | null> {
+// Серверное API
+async function getServerHistory(sessionId?: string): Promise<ChatSession | null> {
     try {
-        const response = await fetch('/configurator/api/v4/chat/history');
+        const url = sessionId
+            ? `/configurator/api/v4/chat/history/${sessionId}`
+            : '/configurator/api/v4/chat/history';
+
+        const response = await fetch(url);
         if (!response.ok) return null;
 
         const result = await response.json();
         if (!result.success) return null;
 
-        return result.data;
+        return parseServerMessages(result.data);
     } catch (error) {
         console.error('Ошибка при получении истории чата:', error);
         return null;
+    }
+}
+
+function parseServerMessages(data: any): ChatSession {
+    // Преобразование ответа сервера в формат приложения
+    return {
+        id: data.id,
+        messages: data.messages.map((msg: any) => ({
+            id: msg.chatId || Date.now().toString(),
+            text: msg.value,
+            sender: msg.role.toLowerCase(),
+            timestamp: new Date(msg.timestamp || Date.now()).getTime(),
+            type: getContentType(msg.type),
+            widget: msg.type === 'widget' ? msg.widget : undefined,
+            imageUrl: msg.type === 'image' ? msg.imageUrl : undefined,
+            videoUrl: msg.type === 'video' ? msg.videoUrl : undefined
+        }))
+    };
+}
+
+function getContentType(serverType: string): ContentType {
+    switch (serverType) {
+        case 'widget': return 'widget';
+        case 'image': return 'image';
+        case 'video': return 'video';
+        default: return 'text';
     }
 }
 
@@ -75,7 +97,11 @@ async function sendServerMessage(text: string, sessionId?: string): Promise<Chat
                 id: Date.now().toString(),
                 text: result.data.value,
                 sender: result.data.role.toLowerCase(),
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                type: getContentType(result.data.type),
+                widget: result.data.type === 'widget' ? result.data.widget : undefined,
+                imageUrl: result.data.type === 'image' ? result.data.imageUrl : undefined,
+                videoUrl: result.data.type === 'video' ? result.data.videoUrl : undefined
             }
         };
     } catch (error) {
@@ -84,56 +110,176 @@ async function sendServerMessage(text: string, sessionId?: string): Promise<Chat
     }
 }
 
-// ==================== Реализация мок API ====================
-
-async function getMockHistory(): Promise<ChatSession | null> {
-    // Имитация задержки
+// Мок API
+async function getMockHistory(sessionId?: string): Promise<ChatSession | null> {
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Возвращаем пустую историю, чтобы ассистент не отвечал сразу
+    if (sessionId === 'demo-session-with-history') {
+        return {
+            id: 'demo-session-with-history',
+            messages: [
+                {
+                    id: '1',
+                    text: 'Привет!',
+                    sender: 'user',
+                    timestamp: Date.now() - 60000,
+                    type: 'text'
+                },
+                {
+                    id: '2',
+                    text: 'Здравствуйте! Чем я могу вам помочь сегодня?',
+                    sender: 'assistant',
+                    timestamp: Date.now() - 55000,
+                    type: 'text'
+                }
+            ]
+        };
+    }
+
     return {
-        id: 'mock-session-123',
-        messages: [] // Пустой массив сообщений
+        id: sessionId || 'mock-session-123',
+        messages: []
     };
 }
 
 async function sendMockMessage(text: string, sessionId?: string): Promise<ChatResponse> {
-    // Имитация задержки
     await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const response = getMockResponse(text);
 
     return {
         sessionId: sessionId || 'mock-session-123',
         message: {
             id: Date.now().toString(),
-            text: getMockResponse(text),
+            text: response.text,
             sender: 'assistant',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            type: response.type,
+            widget: response.type === 'widget' ? response.widget : undefined,
+            imageUrl: response.type === 'image' ? response.imageUrl : undefined,
+            videoUrl: response.type === 'video' ? response.videoUrl : undefined
         }
     };
 }
 
-function getMockResponse(text: string): string {
+interface MockResponse {
+    text: string;
+    type: ContentType;
+    widget?: any;
+    imageUrl?: string;
+    videoUrl?: string;
+}
+
+function getMockResponse(text: string): MockResponse {
     const normalizedText = text.toLowerCase();
 
+    if (normalizedText.includes('виджет') || normalizedText.includes('форма')) {
+        return {
+            text: 'Вот форма для заказа справки:',
+            type: 'widget',
+            widget: {
+                id: "contact-form-widget",
+                type: "Container",
+                props: {
+                    direction: "column",
+                    position: "default",
+                },
+                children: [
+                    {
+                        id: "form-title",
+                        type: "Text",
+                        props: {
+                            text: "Заказ справки",
+                            type: "h2Semibold",
+                        }
+                    },
+                    {
+                        id: "name-input",
+                        type: "Input",
+                        props: {
+                            placeholder: "Ваше имя",
+                        }
+                    },
+                    {
+                        id: "email-input",
+                        type: "Input",
+                        props: {
+                            placeholder: "Ваш Email",
+                        }
+                    },
+                    {
+                        id: "submit-button",
+                        type: "Button",
+                        props: {
+                            text: "Отправить",
+                            size: "m",
+                        }
+                    }
+                ]
+            }
+        };
+    }
+
+    if (normalizedText.includes('картинк') || normalizedText.includes('фото') || normalizedText.includes('изображ')) {
+        return {
+            text: 'Вот пример справки:',
+            type: 'image',
+            imageUrl: 'https://example.com/example-image.jpg'
+        };
+    }
+
+    if (normalizedText.includes('видео') || normalizedText.includes('ролик')) {
+        return {
+            text: 'Вот обучающее видео:',
+            type: 'video',
+            videoUrl: 'https://example.com/example-video.mp4'
+        };
+    }
+
     if (normalizedText.includes('привет') || normalizedText.includes('здравствуй')) {
-        return 'Здравствуйте! Чем я могу вам помочь сегодня?';
+        return {
+            text: 'Здравствуйте! Чем я могу вам помочь сегодня?',
+            type: 'text'
+        };
     }
 
-    if (normalizedText.includes('справк') && normalizedText.includes('посольств')) {
-        return 'Чаще всего мне заказывают вот такие справки с места работы. Если выберете «другая справка», то я подскажу, какие ещё справки можно заказать.';
+    if (normalizedText.includes('справк') && normalizedText.includes('место')) {
+        return {
+            text: 'Чтобы получить справку с места работы, нужно оформить заявку в личном кабинете сотрудника или обратиться напрямую в отдел кадров. Справка будет готова в течение 3 рабочих дней.',
+            type: 'text'
+        };
     }
 
-    if (normalizedText.includes('дат') && normalizedText.includes('прием') && normalizedText.includes('должност')) {
-        return 'Справка с указанием даты приема и должности на русском языке будет готова в течение 3 рабочих дней. Вы можете получить ее в отделе кадров в кабинете 207.';
+    if (normalizedText.includes('погода')) {
+        return {
+            text: 'Я не имею доступа к текущим данным о погоде. Для получения информации о погоде рекомендую обратиться к специализированным сервисам.',
+            type: 'text'
+        };
     }
 
-    if (normalizedText.includes('как') && normalizedText.includes('заказать')) {
-        return 'Чтобы заказать справку, нужно оформить заявку в личном кабинете сотрудника или обратиться напрямую в отдел кадров. Срок изготовления большинства справок - 3 рабочих дня.';
+    if (normalizedText.includes('справк') && normalizedText.includes('заказ')) {
+        return {
+            text: 'Вы можете заказать следующие виды справок: справка с места работы, справка о стаже работы, справка для визы, справка 2-НДФЛ, справка о неполучении пособия, архивная справка. Какая из них вас интересует?',
+            type: 'text'
+        };
     }
 
-    if (normalizedText.includes('другая справка')) {
-        return 'Кроме стандартных справок, вы можете заказать: справку о стаже работы, справку для визы, справку 2-НДФЛ, справку о неполучении пособия, архивную справку. Какая из них вас интересует?';
+    if (normalizedText.includes('команд')) {
+        return {
+            text: 'Для получения информации о составе вашей команды вам необходимо обратиться к своему руководителю или в отдел кадров, так как я не имею доступа к таким данным.',
+            type: 'text'
+        };
     }
 
-    return 'Я могу рассказать подробнее о видах справок для посольства и процедуре их получения. Какая информация вас интересует?';
+    if (normalizedText.includes('отпуск')) {
+        return {
+            text: 'Для получения информации о количестве дней отпуска обратитесь в отдел кадров или проверьте в личном кабинете сотрудника.',
+            type: 'text'
+        };
+    }
+
+    return {
+        text: 'Я готов ответить на ваши вопросы о справках и других документах. Как я могу помочь?',
+        type: 'text'
+    };
 }
