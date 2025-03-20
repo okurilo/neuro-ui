@@ -154,10 +154,12 @@ export const Chat: React.FC = () => {
 
   // Варианты предложений для быстрого начала общения
   const suggestions = [
-    'Расскажи про справки для посольства',
-    'Как заказать справку?',
+    'Что ты умеешь делать?',
+    'Как получить справку с места работы?',
+    'Какая сегодня погода?',
     'Какие справки можно заказать?',
-    'Сколько делается справка с датой приема?'
+    'Сколько человек в моей команде?',
+    'Сколько дней отпуска мне доступно?'
   ];
 
   // Управление индикатором загрузки
@@ -182,7 +184,7 @@ export const Chat: React.FC = () => {
       <ContentContainer>
         <InitialAssistantMessage className={!isFirstMessage ? 'hidden' : ''}>
           <AssistantText>Чем могу помочь?</AssistantText>
-          <AssistantSubtext>Спросите меня о заказе справок или других документов</AssistantSubtext>
+          <AssistantSubtext>Готов ответить на любой ваш вопрос</AssistantSubtext>
         </InitialAssistantMessage>
 
         {!isFirstMessage && <MessagesList messages={messages} />}
