@@ -1,11 +1,12 @@
 // src/components/Chat/ContentRenderer.tsx
 import React from 'react';
 import { Message } from '../../types/chat';
-import { Text } from '../../design-system/Text';
+import { Text } from '@pulse/ui/components/Text';
 import { WidgetRenderer } from './WidgetRenderer';
 import styled from 'styled-components';
 import { fadeIn } from '../../animations/chatAnimations';
 import { css } from 'styled-components';
+import { Visualizer } from '../../../../../lib/wivis/Visualizer';
 
 interface ContentRendererProps {
     message: Message;
@@ -92,17 +93,17 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ message }) => 
     // Проверяем только тип сообщения, не вдаваясь в структуру
     switch (message.type) {
         case 'widget':
-            return <WidgetRenderer widget={message.widget} />;
+            return <Visualizer scheme={message.widget} />;
         case 'image':
             return (
                 <>
-                    {message.text && <Text variant="bodyRegular">{message.text}</Text>}
+                    {message.text && <Text variant="body1Regular">{message.text}</Text>}
                     <MediaContainer>
                         <ImageContent style={{ backgroundImage: message.imageUrl ? `url(${message.imageUrl})` : 'none' }}>
                             {!message.imageUrl && (
                                 <>
                                     <ImageIcon />
-                                    <Text variant="bodySmall" style={{ marginLeft: '8px' }}>Изображение не доступно</Text>
+                                    <Text variant="caption1Regular" style={{ marginLeft: '8px' }}>Изображение не доступно</Text>
                                 </>
                             )}
                         </ImageContent>
@@ -112,7 +113,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ message }) => 
         case 'video':
             return (
                 <>
-                    {message.text && <Text variant="bodyRegular">{message.text}</Text>}
+                    {message.text && <Text variant="body1Regular">{message.text}</Text>}
                     <MediaContainer>
                         <VideoContent>
                             {message.videoUrl ? (
@@ -128,6 +129,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ message }) => 
             );
         case 'text':
         default:
-            return <Text variant="bodyRegular">{message.text}</Text>;
+            return <Text variant="body1Regular">{message.text}</Text>;
     }
 };
