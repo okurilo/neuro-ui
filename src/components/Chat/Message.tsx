@@ -52,9 +52,12 @@ const MessageTextWrapper = styled('div')({
 }, css`animation: ${messageAppear} 0.3s ease-out 0.1s forwards`);
 
 const AvatarWrapper = styled('div')({
+  display: 'flex',
+  alignItems: 'end',
+  flexShrink: 0,
+
   marginLeft: '12px',
   marginRight: '12px',
-  flexShrink: 0,
 });
 
 export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
