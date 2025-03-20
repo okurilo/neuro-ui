@@ -8,6 +8,13 @@ export const Container = styled("div")({
   width: "100%",
   backgroundImage: `url(${backgroundSrc})`,
   backgroundSize: "cover",
-  position: "relative",
-  overflow: "hidden",
+  position: "fixed", // Фиксируем контейнер чата
+  top: 0,
+  left: 0,
+  zIndex: 1000, // Высокий z-index для перекрытия содержимого страницы
+  pointerEvents: "none", // Позволяет кликать сквозь контейнер на элементы страницы
+  // Делаем видимыми только элементы внутри контейнера
+  "& > *": {
+    pointerEvents: "auto",
+  },
 });

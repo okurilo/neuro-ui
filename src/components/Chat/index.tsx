@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Container } from '../../components/Layout/Container';
+import { Container } from '../Layout/Container';
 import { MessagesList } from './MessagesList';
 import { ChatInput } from './ChatInput';
 import { useChat } from '../../hooks/useChat';
@@ -15,6 +15,41 @@ const animations = {
   `,
 };
 
+// Оверлей, который будет закрывать основное содержимое страницы
+const ChatOverlay = styled('div')<{ $isExpanded: boolean }>({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(5px)',
+  zIndex: 999,
+  opacity: 0,
+  pointerEvents: 'none',
+  transition: 'opacity 0.3s ease',
+}, ({ $isExpanded }) => ({
+  opacity: $isExpanded ? 1 : 0,
+  pointerEvents: $isExpanded ? 'auto' : 'none',
+}));
+
+// Контейнер для содержимого чата
+const ChatContainer = styled('div')<{ $isExpanded: boolean }>(
+  ({ $isExpanded }) => ({
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: $isExpanded ? '100vh' : '60px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    zIndex: 1000,
+    transition: 'height 0.3s ease',
+    overflow: 'hidden',
+  })
+);
+
 // Основной контейнер для содержимого
 const ContentContainer = styled('div')({
   display: 'flex',
@@ -27,7 +62,6 @@ const ContentContainer = styled('div')({
   boxSizing: 'border-box',
   position: 'relative',
   overflow: 'hidden',
-  height: '100vh',
   '@media (max-width: 768px)': {
     padding: '0 8px'
   }
@@ -44,6 +78,7 @@ const InitialAssistantMessage = styled('div')({
   maxWidth: '70%',
   textAlign: 'center',
   width: '100%',
+  zIndex: 1001,
 
   '&.hidden': {
     opacity: 0,
@@ -74,7 +109,7 @@ const LoadingIndicator = styled('div')({
   left: '50%',
   bottom: '82px',
   transform: 'translateX(-50%)',
-  zIndex: 5,
+  zIndex: 1005,
 });
 
 // Эффект печатающегося сообщения
@@ -123,7 +158,7 @@ const SuggestionsContainer = styled('div')({
   bottom: '130px',
   width: '90%',
   maxWidth: '600px',
-  zIndex: 90
+  zIndex: 1002
 });
 
 const SuggestionButton = styled('button')({
@@ -150,7 +185,7 @@ const SuggestionButton = styled('button')({
 // Кнопка закрытия чата
 const CloseButton = styled('button')({
   position: 'absolute',
-  top: '10px',
+  top: '20px',
   right: '20px',
   width: '32px',
   height: '32px',
@@ -162,7 +197,7 @@ const CloseButton = styled('button')({
   alignItems: 'center',
   justifyContent: 'center',
   cursor: 'pointer',
-  zIndex: 1000,
+  zIndex: 1003,
   transition: 'all 0.2s ease',
   '&:hover': {
     background: '#f0f0f0',
@@ -189,6 +224,7 @@ export const Chat: React.FC = () => {
     continueChat
   } = useChat();
   const [showLoading, setShowLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Варианты предложений для быстрого начала общения
   const suggestions = [
@@ -213,59 +249,88 @@ export const Chat: React.FC = () => {
     return () => clearTimeout(timer);
   }, [loading]);
 
+  // Расширяем чат при отправке первого сообщения
+  useEffect(() => {
+    setIsExpanded(!isFirstMessage);
+  }, [isFirstMessage]);
+
   const handleSuggestionClick = (suggestion: string) => {
+    // При нажатии на подсказку расширяем чат
+    setIsExpanded(true);
     sendMessage(suggestion);
   };
 
+  const handleStartChat = () => {
+    setIsExpanded(true);
+  };
+
+  const handleContinueChat = () => {
+    setIsExpanded(true);
+    continueChat();
+  };
+
+  const handleCloseChat = () => {
+    setIsExpanded(false);
+    resetChat();
+  };
+
   return (
-    <Container>
-      {!isFirstMessage && (
-        <CloseButton onClick={resetChat} title="Закрыть чат">
-          <CloseIcon />
-        </CloseButton>
-      )}
+    <>
+      <ChatOverlay $isExpanded={isExpanded} />
 
-      <ContentContainer>
-        <InitialAssistantMessage className={!isFirstMessage ? 'hidden' : ''}>
-          <AssistantText>Чем могу помочь?</AssistantText>
-          <AssistantSubtext>Готов ответить на любой ваш вопрос</AssistantSubtext>
-        </InitialAssistantMessage>
-
-        {!isFirstMessage && <MessagesList messages={messages} />}
-
-        {isFirstMessage && (
-          <SuggestionsContainer>
-            {suggestions.map((suggestion, index) => (
-              <SuggestionButton
-                key={index}
-                onClick={() => handleSuggestionClick(suggestion)}
-              >
-                {suggestion}
-              </SuggestionButton>
-            ))}
-          </SuggestionsContainer>
+      <ChatContainer $isExpanded={isExpanded}>
+        {isExpanded && !isFirstMessage && (
+          <CloseButton onClick={handleCloseChat} title="Закрыть чат">
+            <CloseIcon />
+          </CloseButton>
         )}
 
-        {showLoading && (
-          <LoadingIndicator>
-            <TypingIndicator>
-              <TypingDots>
-                <TypingDot />
-                <TypingDot />
-                <TypingDot />
-              </TypingDots>
-            </TypingIndicator>
-          </LoadingIndicator>
-        )}
+        <ContentContainer>
+          {isExpanded && isFirstMessage && (
+            <InitialAssistantMessage>
+              <AssistantText>Чем могу помочь?</AssistantText>
+              <AssistantSubtext>Готов ответить на любой ваш вопрос</AssistantSubtext>
+            </InitialAssistantMessage>
+          )}
 
-        <ChatInput
-          onSendMessage={sendMessage}
-          onContinueChat={continueChat}
-          loading={loading}
-          isFirstMessage={isFirstMessage}
-          hasPreviousSession={hasPreviousSession}
-        />
-      </ContentContainer>
-    </Container>
+          {isExpanded && !isFirstMessage && <MessagesList messages={messages} />}
+
+          {isExpanded && isFirstMessage && (
+            <SuggestionsContainer>
+              {suggestions.map((suggestion, index) => (
+                <SuggestionButton
+                  key={index}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </SuggestionButton>
+              ))}
+            </SuggestionsContainer>
+          )}
+
+          {showLoading && isExpanded && (
+            <LoadingIndicator>
+              <TypingIndicator>
+                <TypingDots>
+                  <TypingDot />
+                  <TypingDot />
+                  <TypingDot />
+                </TypingDots>
+              </TypingIndicator>
+            </LoadingIndicator>
+          )}
+
+          <ChatInput
+            onSendMessage={sendMessage}
+            onContinueChat={handleContinueChat}
+            onStartChat={handleStartChat}
+            loading={loading}
+            isFirstMessage={isFirstMessage}
+            hasPreviousSession={hasPreviousSession}
+            isExpanded={isExpanded}
+          />
+        </ContentContainer>
+      </ChatContainer>
+    </>
   );
 };

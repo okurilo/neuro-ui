@@ -7,14 +7,14 @@ import { Message as MessageType } from '../../types/chat';
 const MessagesContainer = styled('div')({
   display: 'flex',
   flexDirection: 'column',
-  padding: '20px 10px 70px 10px', // Уменьшенный отступ снизу
+  padding: '80px 10px 90px 10px', // Увеличенный отступ сверху для заголовка и снизу для инпута
   overflow: 'auto',
-  maxHeight: 'calc(100vh - 120px)',
+  maxHeight: 'calc(100vh - 80px)', // Учитываем отступ для инпута
+  height: '100vh',
   scrollBehavior: 'smooth',
   position: 'relative',
-
   backdropFilter: "blur(5px)",
-  maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)",
+  maskImage: "linear-gradient(to bottom, black 90%, transparent 100%)",
 
   // Улучшенный стиль скроллбара - показывается только при наведении
   '&::-webkit-scrollbar': {

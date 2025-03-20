@@ -5,9 +5,11 @@ import { pulseEffect, buttonHover } from '../../animations/keyframes';
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
   onContinueChat?: () => void;
+  onStartChat?: () => void;
   loading: boolean;
   isFirstMessage: boolean;
   hasPreviousSession: boolean;
+  isExpanded: boolean;
 }
 
 const animations = {
@@ -19,43 +21,44 @@ const animations = {
   `,
 };
 
-const InputWrapper = styled('div')<{ $isFirstMessage: boolean }>(
-  ({ $isFirstMessage }) => ({
-    position: 'fixed', // Всегда фиксированное позиционирование
-    top: $isFirstMessage ? '50%' : 'auto',
-    left: '0',
+const InputWrapper = styled('div')<{ $isExpanded: boolean; $isFirstMessage: boolean }>(
+  ({ $isExpanded, $isFirstMessage }) => ({
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
     width: '100%',
-    transform: $isFirstMessage ? 'translateY(-50%)' : 'none',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '16px',
+    padding: $isExpanded ? '16px' : '8px',
+    paddingBottom: $isExpanded ? '16px' : '12px',
     marginTop: 'auto',
-    transition: 'all 0.5s ease-in-out',
-    zIndex: 100,
-    bottom: $isFirstMessage ? 'auto' : 0,
+    transition: 'all 0.3s ease-in-out',
+    zIndex: 1002,
+    backgroundColor: $isExpanded ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
+    boxShadow: $isExpanded ? 'none' : '0 -2px 10px rgba(0, 0, 0, 0.05)',
   })
 );
 
-const InputContainer = styled('div')<{ $isFirstMessage: boolean }>(
-  ({ $isFirstMessage }) => ({
+const InputContainer = styled('div')<{ $isExpanded: boolean; $isFirstMessage: boolean }>(
+  ({ $isExpanded, $isFirstMessage }) => ({
     display: 'flex',
     alignItems: 'center',
     width: '100%',
-    maxWidth: $isFirstMessage ? '70%' : '800px',
+    maxWidth: $isExpanded ? '800px' : '60%',
     padding: '6px 12px',
     backgroundColor: '#fff',
     borderRadius: '24px',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
-    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     '&:focus-within': {
       boxShadow: '0 4px 12px rgba(106, 113, 235, 0.3)'
     },
     '@media (max-width: 768px)': {
-      maxWidth: $isFirstMessage ? '90%' : '95%'
+      maxWidth: $isExpanded ? '95%' : '85%'
     }
   }),
-  ({ $isFirstMessage }) => $isFirstMessage && animations.pulseEffect
+  ({ $isExpanded, $isFirstMessage }) => !$isExpanded && animations.pulseEffect
 );
 
 const Input = styled('input')({
@@ -102,7 +105,7 @@ const SendButton = styled('button')<{ $hasText: boolean }>(
 
 // Кнопка продолжения диалога (слева от ввода)
 const ContinueButton = styled('button')(
-  ({
+  {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -121,7 +124,7 @@ const ContinueButton = styled('button')(
     '&:active': {
       transform: 'scale(0.95)'
     }
-  })
+  }
 );
 
 // SVG иконка для кнопки отправки
@@ -144,30 +147,46 @@ const HistoryIcon = () => (
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   onContinueChat,
+  onStartChat,
   loading,
   isFirstMessage,
-  hasPreviousSession
+  hasPreviousSession,
+  isExpanded
 }) => {
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Автофокус на инпуте при первом рендере и после отправки
   useEffect(() => {
-    if (inputRef.current) {
+    if (inputRef.current && isExpanded) {
       inputRef.current.focus();
     }
-  }, [isFirstMessage, loading]);
+  }, [isFirstMessage, loading, isExpanded]);
 
   const handleSend = () => {
     if (message.trim() && !loading) {
+      // Если это первое взаимодействие, вызываем функцию раскрытия чата
+      if (isFirstMessage && !isExpanded && onStartChat) {
+        onStartChat();
+      }
+
       onSendMessage(message);
       setMessage('');
+
       // После отправки сообщения, снова фокусируемся на инпуте
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
         }
       }, 100);
+    } else if (!isExpanded && onStartChat) {
+      // Если поле пустое и чат не раскрыт, просто раскрываем чат
+      onStartChat();
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 300);
     }
   };
 
@@ -184,9 +203,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const handleInputFocus = () => {
+    if (!isExpanded && onStartChat) {
+      onStartChat();
+    }
+  };
+
   return (
-    <InputWrapper $isFirstMessage={isFirstMessage}>
-      <InputContainer $isFirstMessage={isFirstMessage}>
+    <InputWrapper $isExpanded={isExpanded} $isFirstMessage={isFirstMessage}>
+      <InputContainer $isExpanded={isExpanded} $isFirstMessage={isFirstMessage}>
         {isFirstMessage && hasPreviousSession && (
           <ContinueButton
             title="Продолжить предыдущий диалог"
@@ -201,13 +226,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={handleInputFocus}
           placeholder={isFirstMessage ? "Задайте вопрос..." : "Введите сообщение..."}
           disabled={loading}
-          autoFocus
         />
         <SendButton
           onClick={handleSend}
-          disabled={loading || !message.trim()}
+          disabled={loading}
           title="Отправить сообщение"
           $hasText={!!message.trim()}
         >
