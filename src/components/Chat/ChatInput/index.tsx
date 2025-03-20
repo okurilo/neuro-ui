@@ -80,22 +80,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     };
 
     return (
-        <InputWrapper $isExpanded={isExpanded} $isFirstMessage={isFirstMessage} >
-            <InputContainer $isExpanded={isExpanded} $isFirstMessage={isFirstMessage} >
-                {/* Показываем кнопку истории всегда, но делаем неактивной, если истории нет */}
-                <ContinueButton
-                    title={hasPreviousSession ? "Продолжить предыдущий диалог" : "Нет предыдущих диалогов"}
-                    onClick={handleContinueChat}
-                    disabled={!hasPreviousSession || loading}
-                    $isActive={hasPreviousSession}
-                    $isLoading={loading}
-                >
-                    {loading ? (
-                        <LoadingSpinner />
-                    ) : (
-                        <HistoryIcon />
-                    )}
-                </ContinueButton>
+        <InputWrapper $isExpanded={isExpanded} $isFirstMessage={isFirstMessage}>
+            <InputContainer $isExpanded={isExpanded}>
+                {/* Показываем кнопку истории только при первом сообщении */}
+                {isFirstMessage && (
+                    <ContinueButton
+                        title={hasPreviousSession ? "Продолжить предыдущий диалог" : "Нет предыдущих диалогов"}
+                        onClick={handleContinueChat}
+                        disabled={!hasPreviousSession || loading}
+                        $isActive={hasPreviousSession}
+                        $isLoading={loading}
+                    >
+                        {loading ? (
+                            <LoadingSpinner />
+                        ) : (
+                            <HistoryIcon />
+                        )}
+                    </ContinueButton>
+                )}
 
                 <Input
                     ref={inputRef}

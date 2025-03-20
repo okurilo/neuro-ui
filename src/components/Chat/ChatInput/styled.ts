@@ -3,13 +3,13 @@ import { pulseEffect, buttonHover } from '../../../animations/keyframes';
 
 const focusPulse = keyframes`
   0% {
-    box-shadow: 0 0 0 0 rgba(74, 125, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(74, 125, 255, 0.1);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(74, 125, 255, 0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 3px rgba(74, 125, 255, 0.2);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(74, 125, 255, 0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(74, 125, 255, 0.1);
   }
 `;
 
@@ -44,8 +44,8 @@ export const InputWrapper = styled('div')<{ $isExpanded: boolean; $isFirstMessag
     })
 );
 
-export const InputContainer = styled('div')<{ $isExpanded: boolean; $isFirstMessage: boolean }>(
-    ({ $isExpanded, $isFirstMessage }) => ({
+export const InputContainer = styled('div')<{ $isExpanded: boolean }>(
+    ({ $isExpanded }) => ({
         display: 'flex',
         alignItems: 'center',
         width: '100%',
@@ -56,14 +56,13 @@ export const InputContainer = styled('div')<{ $isExpanded: boolean; $isFirstMess
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         '&:focus-within': {
-            boxShadow: '0 0 0 1px rgba(74, 125, 255, 0.5)',
             transform: 'scale(1.005)'
         },
         '@media (max-width: 768px)': {
             maxWidth: $isExpanded ? '95%' : '85%'
         }
     }),
-    ({ $isExpanded, $isFirstMessage }) => !$isExpanded && animations.pulseEffect,
+    ({ $isExpanded }) => !$isExpanded && animations.pulseEffect,
     ({ $isExpanded }) => $isExpanded && css`
         &:focus-within {
             ${animations.focusPulse}
