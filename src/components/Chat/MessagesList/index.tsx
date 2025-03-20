@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Message } from '../Message';
 import { Message as MessageType } from '../../../types/chat';
-import { MessagesContainer, DateSeparator, DatePill } from './styled';
+import { MessagesContainer, DateSeparator, DatePill, MessagesContainerWrapper } from './styled';
 
 // Иконка календаря
 const CalendarIcon = () => (
@@ -54,25 +54,26 @@ export const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
     }, [messages]);
 
     return (
-        <MessagesContainer ref={containerRef}>
-            {messages.map((message, index) => (
-                <React.Fragment key={message.id || index}>
-                    {/* Отображаем разделитель даты, если нужно */}
-                    {shouldShowDateSeparator(message, messages[index - 1]) && (
-                        <DateSeparator>
-                            <DatePill>
-                                <CalendarIcon />
-                                {formatDate(message.timestamp)}
-                            </DatePill>
-                        </DateSeparator>
-                    )}
+        <MessagesContainerWrapper>
+            <MessagesContainer ref={containerRef}>
+                {messages.map((message, index) => (
+                    <React.Fragment key={message.id || index}>
+                        {shouldShowDateSeparator(message, messages[index - 1]) && (
+                            <DateSeparator>
+                                <DatePill>
+                                    <CalendarIcon />
+                                    {formatDate(message.timestamp)}
+                                </DatePill>
+                            </DateSeparator>
+                        )}
 
-                    <Message
-                        message={message}
-                        isLast={index === messages.length - 1}
-                    />
-                </React.Fragment>
-            ))}
-        </MessagesContainer>
+                        <Message
+                            message={message}
+                            isLast={index === messages.length - 1}
+                        />
+                    </React.Fragment>
+                ))}
+            </MessagesContainer>
+        </MessagesContainerWrapper>
     );
 };

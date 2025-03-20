@@ -1,28 +1,31 @@
 import styled from 'styled-components';
 
+export const MessagesContainerWrapper = styled('div')({
+    position: 'relative',
+    height: 'calc(100vh - 120px)',
+    overflow: 'hidden', // Скрываем внешний скролл
+    paddingTop: '80px',
+    paddingBottom: '80px'
+});
+
 export const MessagesContainer = styled('div')({
+    height: '100%',
+    overflow: 'auto',
+    paddingRight: '10px',
+    paddingLeft: '10px',
     display: 'flex',
     flexDirection: 'column',
-    padding: '120px 10px 90px 10px', // Увеличиваем верхний отступ
-    overflow: 'auto',
-    maxHeight: 'calc(100vh - 120px)',
-    height: '100vh',
     scrollBehavior: 'smooth',
-    position: 'relative',
-    backdropFilter: "blur(5px)",
-    maskImage: "linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
 
     // Стиль скроллбара в стиле macOS
     '&::-webkit-scrollbar': {
         width: '8px',
         backgroundColor: 'transparent',
     },
-
     '&::-webkit-scrollbar-track': {
         backgroundColor: 'transparent',
         margin: '4px 0',
     },
-
     '&::-webkit-scrollbar-thumb': {
         backgroundColor: 'rgba(0, 0, 0, 0.2)',
         borderRadius: '10px',
@@ -30,7 +33,6 @@ export const MessagesContainer = styled('div')({
         backgroundClip: 'content-box',
         transition: 'background-color 0.3s ease',
     },
-
     '&:hover::-webkit-scrollbar-thumb': {
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
     }
