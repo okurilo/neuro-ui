@@ -1,40 +1,7 @@
 // src/api/chatApi.ts
 import { ChatSession, ChatResponse, Message, ContentType } from '../types/chat';
 
-// Константа для переключения между мок и сервером
-const USE_MOCK_API = true;
-
-// Определяем интерфейс для моковых ответов
-interface MockResponse {
-    text: string;
-    type: ContentType;
-    widget?: any;
-    imageUrl?: string;
-    videoUrl?: string;
-}
-
-// Для демо-режима храним последнюю сессию
-let lastMockSessionId = 'demo-session-123';
-let mockMessages: Message[] = [];
-
 export async function getHistory(sessionId?: string): Promise<ChatSession | null> {
-    if (USE_MOCK_API) {
-        return getMockHistory(sessionId);
-    } else {
-        return getServerHistory(sessionId);
-    }
-}
-
-export async function sendMessage(text: string, sessionId?: string): Promise<ChatResponse> {
-    if (USE_MOCK_API) {
-        return sendMockMessage(text, sessionId);
-    } else {
-        return sendServerMessage(text, sessionId);
-    }
-}
-
-// Серверное API
-async function getServerHistory(sessionId?: string): Promise<ChatSession | null> {
     try {
         // Запрос истории: без sessionId - получаем последнюю сессию
         // с sessionId - получаем конкретную сессию
@@ -52,6 +19,49 @@ async function getServerHistory(sessionId?: string): Promise<ChatSession | null>
     } catch (error) {
         console.error('Ошибка при получении истории чата:', error);
         return null;
+    }
+}
+
+export async function sendMessage(text: string, sessionId?: string): Promise<ChatResponse> {
+    try {
+        const requestBody: Record<string, any> = { value: text };
+        if (sessionId) {
+            requestBody.chatId = sessionId;
+        }
+
+        const response = await fetch('/api-web/configurator/api/v4/chat/say', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Ошибка API: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error('Ошибка в ответе API');
+        }
+
+        return {
+            sessionId: result.data.chatId,
+            message: {
+                id: Date.now().toString(),
+                text: result.data.value,
+                sender: result.data.role.toLowerCase(),
+                timestamp: Date.now(),
+                type: getContentType(result.data.type),
+                widget: result.data.type === 'widget' ? result.data.widget : undefined,
+                imageUrl: result.data.type === 'image' ? result.data.imageUrl : undefined,
+                videoUrl: result.data.type === 'video' ? result.data.videoUrl : undefined
+            }
+        };
+    } catch (error) {
+        console.error('Ошибка при отправке сообщения:', error);
+        throw error;
     }
 }
 
@@ -79,228 +89,4 @@ function getContentType(serverType: string): ContentType {
         case 'video': return 'video';
         default: return 'text';
     }
-}
-
-async function sendServerMessage(text: string, sessionId?: string): Promise<ChatResponse> {
-    try {
-        const requestBody: Record<string, any> = { value: text };
-        if (sessionId) {
-            requestBody.chatId = sessionId;
-        }
-
-        const response = await fetch('/api-web/configurator/api/v4/chat/say', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Ошибка API: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (!result.success) {
-            throw new Error('Ошибка в ответе API');
-        }
-
-        // Преобразование формата API к внутреннему формату приложения
-        return {
-            sessionId: result.data.chatId,
-            message: {
-                id: Date.now().toString(),
-                text: result.data.value,
-                sender: result.data.role.toLowerCase(),
-                timestamp: Date.now(),
-                type: getContentType(result.data.type),
-                widget: result.data.type === 'widget' ? result.data.widget : undefined,
-                imageUrl: result.data.type === 'image' ? result.data.imageUrl : undefined,
-                videoUrl: result.data.type === 'video' ? result.data.videoUrl : undefined
-            }
-        };
-    } catch (error) {
-        console.error('Ошибка при отправке сообщения:', error);
-        throw error;
-    }
-}
-
-// Мок API
-async function getMockHistory(sessionId?: string): Promise<ChatSession | null> {
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    // Для мока: без параметра sessionId - возвращаем последнюю сессию (если есть)
-    // с параметром - возвращаем конкретную сессию с её сообщениями
-
-    if (!sessionId) {
-        // Первый запрос - возвращаем последнюю сессию
-        return {
-            id: lastMockSessionId,
-            messages: mockMessages
-        };
-    } else {
-        // Запрос конкретной сессии
-        // Здесь бы в реальном API искали сессию по ID, но для мока просто возвращаем текущие сообщения
-        return {
-            id: sessionId,
-            messages: mockMessages
-        };
-    }
-}
-
-async function sendMockMessage(text: string, sessionId?: string): Promise<ChatResponse> {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Используем переданный sessionId или создаем новый
-    const currentSessionId = sessionId || `mock-session-${Date.now()}`;
-
-    // Сохраняем ID последней сессии для истории
-    lastMockSessionId = currentSessionId;
-
-    // Создаем сообщение пользователя
-    const userMessage: Message = {
-        id: `user-${Date.now()}`,
-        text,
-        sender: 'user',
-        timestamp: Date.now(),
-        type: 'text'
-    };
-
-    // Получаем ответ от мок-сервера
-    const response = getMockResponse(text);
-
-    // Создаем сообщение от ассистента
-    const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        text: response.text,
-        sender: 'assistant',
-        timestamp: Date.now() + 1000, // немного позже, чем сообщение пользователя
-        type: response.type,
-        widget: response.type === 'widget' ? response.widget : undefined,
-        imageUrl: response.type === 'image' ? response.imageUrl : undefined,
-        videoUrl: response.type === 'video' ? response.videoUrl : undefined
-    };
-
-    // Сохраняем оба сообщения в историю
-    mockMessages = [...mockMessages, userMessage, assistantMessage];
-
-    // Возвращаем ответ в формате API
-    return {
-        sessionId: currentSessionId,
-        message: assistantMessage
-    };
-}
-
-function getMockResponse(text: string): MockResponse {
-    const normalizedText = text.toLowerCase();
-
-    if (normalizedText.includes('виджет') || normalizedText.includes('форма')) {
-        return {
-            text: 'Вот форма для заказа справки:',
-            type: 'widget',
-            widget: {
-                id: "contact-form-widget",
-                type: "Container",
-                props: {
-                    direction: "column",
-                    position: "default",
-                },
-                children: [
-                    {
-                        id: "form-title",
-                        type: "Text",
-                        props: {
-                            text: "Заказ справки",
-                            type: "h2Semibold",
-                        }
-                    },
-                    {
-                        id: "name-input",
-                        type: "Input",
-                        props: {
-                            placeholder: "Ваше имя",
-                        }
-                    },
-                    {
-                        id: "email-input",
-                        type: "Input",
-                        props: {
-                            placeholder: "Ваш Email",
-                        }
-                    },
-                    {
-                        id: "submit-button",
-                        type: "Button",
-                        props: {
-                            text: "Отправить",
-                            size: "m",
-                        }
-                    }
-                ]
-            }
-        };
-    }
-
-    if (normalizedText.includes('картинк') || normalizedText.includes('фото') || normalizedText.includes('изображ')) {
-        return {
-            text: 'Вот пример справки:',
-            type: 'image',
-            imageUrl: 'https://example.com/example-image.jpg'
-        };
-    }
-
-    if (normalizedText.includes('видео') || normalizedText.includes('ролик')) {
-        return {
-            text: 'Вот обучающее видео:',
-            type: 'video',
-            videoUrl: 'https://example.com/example-video.mp4'
-        };
-    }
-
-    if (normalizedText.includes('привет') || normalizedText.includes('здравствуй')) {
-        return {
-            text: 'Здравствуйте! Чем я могу вам помочь сегодня?',
-            type: 'text'
-        };
-    }
-
-    if (normalizedText.includes('справк') && normalizedText.includes('место')) {
-        return {
-            text: 'Чтобы получить справку с места работы, нужно оформить заявку в личном кабинете сотрудника или обратиться напрямую в отдел кадров. Справка будет готова в течение 3 рабочих дней.',
-            type: 'text'
-        };
-    }
-
-    if (normalizedText.includes('погода')) {
-        return {
-            text: 'Я не имею доступа к текущим данным о погоде. Для получения информации о погоде рекомендую обратиться к специализированным сервисам.',
-            type: 'text'
-        };
-    }
-
-    if (normalizedText.includes('справк') && normalizedText.includes('заказ')) {
-        return {
-            text: 'Вы можете заказать следующие виды справок: справка с места работы, справка о стаже работы, справка для визы, справка 2-НДФЛ, справка о неполучении пособия, архивная справка. Какая из них вас интересует?',
-            type: 'text'
-        };
-    }
-
-    if (normalizedText.includes('команд')) {
-        return {
-            text: 'Для получения информации о составе вашей команды вам необходимо обратиться к своему руководителю или в отдел кадров, так как я не имею доступа к таким данным.',
-            type: 'text'
-        };
-    }
-
-    if (normalizedText.includes('отпуск')) {
-        return {
-            text: 'Для получения информации о количестве дней отпуска обратитесь в отдел кадров или проверьте в личном кабинете сотрудника.',
-            type: 'text'
-        };
-    }
-
-    return {
-        text: 'Я готов ответить на ваши вопросы о справках и других документах. Как я могу помочь?',
-        type: 'text'
-    };
 }

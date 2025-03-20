@@ -5,6 +5,7 @@ import { getHistory, sendMessage } from '../api/chatApi';
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [historyMessages, setHistoryMessages] = useState<Message[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>();
   const [previousSessionId, setPreviousSessionId] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
@@ -18,13 +19,8 @@ export const useChat = () => {
       const history = await getHistory();
       if (history && history.id) {
         setPreviousSessionId(history.id);
+        setHistoryMessages(history.messages);
         setHasPreviousSession(history.messages.length > 0);
-
-        // Храним сообщения на случай, если пользователь захочет продолжить диалог
-        if (history.messages.length > 0) {
-          // Не устанавливаем их в state сразу, чтобы не отображать
-          setMessages([]); // Начинаем с пустого массива сообщений
-        }
       }
     } catch (error) {
       console.error('Ошибка при загрузке истории чата:', error);
@@ -33,28 +29,15 @@ export const useChat = () => {
     }
   }, []);
 
-  useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+  // Продолжение предыдущего диалога - НЕ делает запрос, а использует кэшированные данные
+  const continueChat = useCallback(() => {
+    if (!previousSessionId || historyMessages.length === 0) return;
 
-  // Продолжение предыдущего диалога
-  const continueChat = useCallback(async () => {
-    if (!previousSessionId) return;
-
-    setLoading(true);
-    try {
-      const history = await getHistory(previousSessionId);
-      if (history) {
-        setMessages(history.messages);
-        setCurrentSessionId(history.id);
-        setIsFirstMessage(false);
-      }
-    } catch (error) {
-      console.error('Ошибка при загрузке предыдущего диалога:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [previousSessionId]);
+    // Используем сохраненные сообщения из истории
+    setMessages(historyMessages);
+    setCurrentSessionId(previousSessionId);
+    setIsFirstMessage(false);
+  }, [previousSessionId, historyMessages]);
 
   // Отправка сообщения
   const sendChatMessage = useCallback(async (text: string) => {
@@ -97,13 +80,14 @@ export const useChat = () => {
     // Сохраняем текущий ID как предыдущий
     if (currentSessionId) {
       setPreviousSessionId(currentSessionId);
+      // При следующем входе нужно будет запросить свежие данные
+      setHasPreviousSession(true);
     }
 
     // Очищаем текущие данные
     setMessages([]);
     setCurrentSessionId(undefined);
     setIsFirstMessage(true);
-    setHasPreviousSession(true); // Теперь у нас точно есть предыдущая сессия
   }, [currentSessionId]);
 
   return {
