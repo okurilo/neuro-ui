@@ -178,13 +178,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const handleContinueChat = () => {
+    if (onContinueChat && hasPreviousSession && !loading) {
+      onContinueChat();
+    }
+  };
+
   return (
     <InputWrapper $isFirstMessage={isFirstMessage}>
       <InputContainer $isFirstMessage={isFirstMessage}>
         {isFirstMessage && hasPreviousSession && (
           <ContinueButton
             title="Продолжить предыдущий диалог"
-            onClick={onContinueChat}
+            onClick={handleContinueChat}
             disabled={loading}
           >
             <HistoryIcon />

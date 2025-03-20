@@ -13,6 +13,10 @@ interface MockResponse {
     videoUrl?: string;
 }
 
+// Для демо-режима храним последнюю сессию
+let lastMockSessionId = 'demo-session-123';
+let mockMessages: Message[] = [];
+
 export async function getHistory(sessionId?: string): Promise<ChatSession | null> {
     if (USE_MOCK_API) {
         return getMockHistory(sessionId);
@@ -32,6 +36,8 @@ export async function sendMessage(text: string, sessionId?: string): Promise<Cha
 // Серверное API
 async function getServerHistory(sessionId?: string): Promise<ChatSession | null> {
     try {
+        // Запрос истории: без sessionId - получаем последнюю сессию
+        // с sessionId - получаем конкретную сессию
         const url = sessionId
             ? `/api-web/configurator/api/v4/chat/history/${sessionId}`
             : '/api-web/configurator/api/v4/chat/history';
@@ -123,64 +129,65 @@ async function sendServerMessage(text: string, sessionId?: string): Promise<Chat
 async function getMockHistory(sessionId?: string): Promise<ChatSession | null> {
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Здесь нужно адаптировать мок под наше требование:
-    // Если запрос первоначальный (без sessionId), но у нас есть история - вернуть пустой массив сообщений, но с ID сессии
+    // Для мока: без параметра sessionId - возвращаем последнюю сессию (если есть)
+    // с параметром - возвращаем конкретную сессию с её сообщениями
 
-    // Имитируем наличие предыдущей сессии
     if (!sessionId) {
-        // Вернем сессию с ID, но без сообщений
+        // Первый запрос - возвращаем последнюю сессию
         return {
-            id: 'demo-session-with-history',
-            messages: []
+            id: lastMockSessionId,
+            messages: mockMessages
+        };
+    } else {
+        // Запрос конкретной сессии
+        // Здесь бы в реальном API искали сессию по ID, но для мока просто возвращаем текущие сообщения
+        return {
+            id: sessionId,
+            messages: mockMessages
         };
     }
-
-    // Если указан ID сессии, значит, пользователь хочет загрузить предыдущий диалог
-    if (sessionId === 'demo-session-with-history') {
-        return {
-            id: 'demo-session-with-history',
-            messages: [
-                {
-                    id: '1',
-                    text: 'Привет!',
-                    sender: 'user',
-                    timestamp: Date.now() - 60000,
-                    type: 'text'
-                },
-                {
-                    id: '2',
-                    text: 'Здравствуйте! Чем я могу вам помочь сегодня?',
-                    sender: 'assistant',
-                    timestamp: Date.now() - 55000,
-                    type: 'text'
-                }
-            ]
-        };
-    }
-
-    return {
-        id: sessionId || 'mock-session-123',
-        messages: []
-    };
 }
 
 async function sendMockMessage(text: string, sessionId?: string): Promise<ChatResponse> {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
+    // Используем переданный sessionId или создаем новый
+    const currentSessionId = sessionId || `mock-session-${Date.now()}`;
+
+    // Сохраняем ID последней сессии для истории
+    lastMockSessionId = currentSessionId;
+
+    // Создаем сообщение пользователя
+    const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        text,
+        sender: 'user',
+        timestamp: Date.now(),
+        type: 'text'
+    };
+
+    // Получаем ответ от мок-сервера
     const response = getMockResponse(text);
 
+    // Создаем сообщение от ассистента
+    const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        text: response.text,
+        sender: 'assistant',
+        timestamp: Date.now() + 1000, // немного позже, чем сообщение пользователя
+        type: response.type,
+        widget: response.type === 'widget' ? response.widget : undefined,
+        imageUrl: response.type === 'image' ? response.imageUrl : undefined,
+        videoUrl: response.type === 'video' ? response.videoUrl : undefined
+    };
+
+    // Сохраняем оба сообщения в историю
+    mockMessages = [...mockMessages, userMessage, assistantMessage];
+
+    // Возвращаем ответ в формате API
     return {
-        sessionId: sessionId || 'mock-session-123',
-        message: {
-            id: Date.now().toString(),
-            text: response.text,
-            sender: 'assistant',
-            timestamp: Date.now(),
-            type: response.type,
-            widget: response.type === 'widget' ? response.widget : undefined,
-            imageUrl: response.type === 'image' ? response.imageUrl : undefined,
-            videoUrl: response.type === 'video' ? response.videoUrl : undefined
-        }
+        sessionId: currentSessionId,
+        message: assistantMessage
     };
 }
 

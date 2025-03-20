@@ -66,7 +66,7 @@ const AssistantSubtext = styled('p')({
   marginBottom: '16px'
 });
 
-// Новый индикатор печати с более элегантной анимацией
+// Индикатор загрузки
 const LoadingIndicator = styled('div')({
   display: 'inline-flex',
   alignItems: 'center',
@@ -208,7 +208,7 @@ export const Chat: React.FC = () => {
     } else {
       timer = setTimeout(() => {
         setShowLoading(false);
-      }, 500); // Увеличиваем время задержки для более плавного исчезновения
+      }, 500);
     }
     return () => clearTimeout(timer);
   }, [loading]);
@@ -219,10 +219,11 @@ export const Chat: React.FC = () => {
 
   return (
     <Container>
-      {!isFirstMessage &&
+      {!isFirstMessage && (
         <CloseButton onClick={resetChat} title="Закрыть чат">
           <CloseIcon />
-        </CloseButton>}
+        </CloseButton>
+      )}
 
       <ContentContainer>
         <InitialAssistantMessage className={!isFirstMessage ? 'hidden' : ''}>
