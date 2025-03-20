@@ -42,7 +42,9 @@ export const DateSeparator = styled('div')({
     alignItems: 'center',
     justifyContent: 'center',
     margin: '24px 0 16px',
-    position: 'relative'
+    position: 'sticky',
+    top: '20px',
+    zIndex: 10
 });
 
 export const DatePill = styled('div')({
@@ -57,16 +59,7 @@ export const DatePill = styled('div')({
     color: '#555',
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '6px',
-    zIndex: 1,
-    position: 'sticky',
-    top: '20px',
-    margin: '0 auto',
-    animation: 'fadeIn 0.3s ease-out',
-    '@keyframes fadeIn': {
-        from: { opacity: 0, transform: 'translateY(-10px)' },
-        to: { opacity: 1, transform: 'translateY(0)' }
-    }
+    gap: '6px'
 });
 // export const DatePill = styled('div')({
 //     background: 'rgba(255, 255, 255, 0.9)',

@@ -43,9 +43,14 @@ export const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (containerRef.current) {
-            containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        }
+        // Добавляем задержку для корректного скролла виджетов
+        const timer = setTimeout(() => {
+            if (containerRef.current) {
+                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            }
+        }, 100); // Небольшая задержка для рендеринга виджетов
+
+        return () => clearTimeout(timer);
     }, [messages]);
 
     return (
