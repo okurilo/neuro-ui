@@ -1,15 +1,19 @@
 import styled, { css, keyframes } from 'styled-components';
-import { pulseEffect, buttonHover } from '../../../animations/keyframes';
+import { pulseEffect, buttonHover } from '../../../animations/keyframes
 
-const focusPulse = keyframes`
+// Анимация подсветки бордера
+const borderGlow = keyframes`
   0% {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(74, 125, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: rgba(230, 230, 230, 1);
   }
-  70% {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 3px rgba(74, 125, 255, 0.2);
+  50% {
+    box-shadow: 0 2px 12px rgba(74, 125, 255, 0.12);
+    border-color: rgba(74, 125, 255, 0.5);
   }
   100% {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(74, 125, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: rgba(230, 230, 230, 1);
   }
 `;
 
@@ -20,10 +24,11 @@ export const animations = {
     buttonHover: css`
         animation: ${buttonHover} 0.6s ease infinite;
     `,
-    focusPulse: css`
-        animation: ${focusPulse} 1.5s infinite;
+    borderGlow: css`
+        animation: ${borderGlow} 2s infinite ease-in-out;
     `
 };
+
 
 export const InputWrapper = styled('div')<{ $isExpanded: boolean; $isFirstMessage: boolean }>(
     ({ $isExpanded, $isFirstMessage }) => ({
@@ -53,10 +58,13 @@ export const InputContainer = styled('div')<{ $isExpanded: boolean }>(
         padding: '6px 12px',
         backgroundColor: '#fff',
         borderRadius: '24px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+        border: '1px solid #e6e6e6',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         '&:focus-within': {
-            transform: 'scale(1.005)'
+            borderColor: 'rgba(74, 125, 255, 0.7)',
+            boxShadow: '0 3px 10px rgba(74, 125, 255, 0.15)',
+            transform: 'translateY(-1px)'
         },
         '@media (max-width: 768px)': {
             maxWidth: $isExpanded ? '95%' : '85%'
@@ -65,7 +73,7 @@ export const InputContainer = styled('div')<{ $isExpanded: boolean }>(
     ({ $isExpanded }) => !$isExpanded && animations.pulseEffect,
     ({ $isExpanded }) => $isExpanded && css`
         &:focus-within {
-            ${animations.focusPulse}
+            ${animations.borderGlow}
         }
     `
 );
@@ -79,9 +87,13 @@ export const Input = styled('input')({
     background: 'transparent',
     borderRadius: '24px',
     color: '#333',
-    transition: 'transform 0.2s ease',
-    '&:focus': {
-        transform: 'scale(1.01)'
+    transition: 'all 0.2s ease',
+    '&::placeholder': {
+        color: '#999',
+        transition: 'color 0.2s ease'
+    },
+    '&:focus::placeholder': {
+        color: '#bbb'
     }
 });
 

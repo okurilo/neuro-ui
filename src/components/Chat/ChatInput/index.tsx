@@ -40,6 +40,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const [message, setMessage] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Определяем текст плейсхолдера в зависимости от состояния
+    const placeholderText = isFirstMessage
+        ? "Задайте вопрос..."
+        : "Введите сообщение...";
+
     // Автофокус на инпуте при первом рендере и после отправки
     useEffect(() => {
         if (inputRef.current && isExpanded) {
@@ -104,7 +109,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Задайте вопрос..."
+                    placeholder={placeholderText}
                     disabled={loading}
                 />
 
