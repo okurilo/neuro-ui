@@ -29,7 +29,11 @@ export const useChat = () => {
     }
   }, []);
 
-  // Продолжение предыдущего диалога - НЕ делает запрос, а использует кэшированные данные
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  // Продолжение предыдущего диалога
   const continueChat = useCallback(() => {
     if (!previousSessionId || historyMessages.length === 0) return;
 
@@ -88,7 +92,10 @@ export const useChat = () => {
     setMessages([]);
     setCurrentSessionId(undefined);
     setIsFirstMessage(true);
-  }, [currentSessionId]);
+
+    // Делаем новый запрос на историю, чтобы обновить данные
+    loadHistory();
+  }, [currentSessionId, loadHistory]);
 
   return {
     messages,
