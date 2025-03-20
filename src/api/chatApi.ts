@@ -22,6 +22,7 @@ export async function getHistory(sessionId?: string): Promise<ChatSession | null
     }
 }
 
+// Обновленная часть в chatApi.ts
 export async function sendMessage(text: string, sessionId?: string): Promise<ChatResponse> {
     try {
         const requestBody: Record<string, any> = { value: text };
@@ -46,17 +47,48 @@ export async function sendMessage(text: string, sessionId?: string): Promise<Cha
             throw new Error('Ошибка в ответе API');
         }
 
+        // Обрабатываем разные типы ответов
+        let messageContent: any = {
+            type: 'text',
+            text: result.data.value || ''
+        };
+
+        // Если пришел виджет, сохраняем его структуру
+        if (result.data.type === 'widget') {
+            messageContent = {
+                type: 'widget',
+                text: '', // Можно задать текстовое описание виджета, если нужно
+                widget: result.data.value // Предполагаем, что в value содержится объект виджета
+            };
+        }
+        // Для изображений
+        else if (result.data.type === 'image') {
+            messageContent = {
+                type: 'image',
+                text: result.data.value || '', // Описание изображения
+                imageUrl: result.data.imageUrl || null
+            };
+        }
+        // Для видео
+        else if (result.data.type === 'video') {
+            messageContent = {
+                type: 'video',
+                text: result.data.value || '', // Описание видео
+                videoUrl: result.data.videoUrl || null
+            };
+        }
+
         return {
             sessionId: result.data.chatId,
             message: {
                 id: Date.now().toString(),
-                text: result.data.value,
+                text: messageContent.text,
                 sender: result.data.role.toLowerCase(),
                 timestamp: Date.now(),
-                type: getContentType(result.data.type),
-                widget: result.data.type === 'widget' ? result.data.widget : undefined,
-                imageUrl: result.data.type === 'image' ? result.data.imageUrl : undefined,
-                videoUrl: result.data.type === 'video' ? result.data.videoUrl : undefined
+                type: messageContent.type,
+                widget: messageContent.widget,
+                imageUrl: messageContent.imageUrl,
+                videoUrl: messageContent.videoUrl
             }
         };
     } catch (error) {
