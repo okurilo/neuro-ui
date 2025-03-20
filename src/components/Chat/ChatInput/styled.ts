@@ -54,7 +54,7 @@ export const InputContainer = styled('div')<{ $isExpanded: boolean }>(
         display: 'flex',
         alignItems: 'center',
         width: '100%',
-        maxWidth: $isExpanded ? '800px' : '60%',
+        maxWidth: $isExpanded ? '70vw' : '40vw', // Используем vw вместо фиксированных пикселей
         padding: '6px 12px',
         backgroundColor: '#fff',
         borderRadius: '24px',
@@ -67,7 +67,7 @@ export const InputContainer = styled('div')<{ $isExpanded: boolean }>(
             transform: 'translateY(-1px)'
         },
         '@media (max-width: 768px)': {
-            maxWidth: $isExpanded ? '95%' : '85%'
+            maxWidth: $isExpanded ? '90vw' : '70vw' // Адаптируем для мобильных устройств
         }
     }),
     ({ $isExpanded }) => !$isExpanded && animations.pulseEffect,

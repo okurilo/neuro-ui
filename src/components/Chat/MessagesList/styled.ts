@@ -58,5 +58,28 @@ export const DatePill = styled('div')({
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    zIndex: 1
+    zIndex: 1,
+    position: 'sticky',
+    top: '20px',
+    margin: '0 auto',
+    animation: 'fadeIn 0.3s ease-out',
+    '@keyframes fadeIn': {
+        from: { opacity: 0, transform: 'translateY(-10px)' },
+        to: { opacity: 1, transform: 'translateY(0)' }
+    }
 });
+// export const DatePill = styled('div')({
+//     background: 'rgba(255, 255, 255, 0.9)',
+//     backdropFilter: 'blur(4px)',
+//     border: '1px solid rgba(0, 0, 0, 0.05)',
+//     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+//     borderRadius: '20px',
+//     padding: '6px 16px',
+//     fontSize: '13px',
+//     fontWeight: 500,
+//     color: '#555',
+//     display: 'inline-flex',
+//     alignItems: 'center',
+//     gap: '6px',
+//     zIndex: 1
+// });
