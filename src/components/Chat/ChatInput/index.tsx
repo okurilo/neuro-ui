@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { InputWrapper, InputContainer, Input, SendButton, ContinueButton } from './styled';
+import { InputWrapper, InputContainer, Input, SendButton, ContinueButton, LoadingSpinner } from './styled';
 
 interface ChatInputProps {
     onSendMessage: (text: string) => void;
@@ -82,15 +82,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return (
         <InputWrapper $isExpanded={isExpanded} $isFirstMessage={isFirstMessage} >
             <InputContainer $isExpanded={isExpanded} $isFirstMessage={isFirstMessage} >
-                {isFirstMessage && hasPreviousSession && (
-                    <ContinueButton
-                        title="Продолжить предыдущий диалог"
-                        onClick={handleContinueChat}
-                        disabled={loading}
-                    >
+                {/* Показываем кнопку истории всегда, но делаем неактивной, если истории нет */}
+                <ContinueButton
+                    title={hasPreviousSession ? "Продолжить предыдущий диалог" : "Нет предыдущих диалогов"}
+                    onClick={handleContinueChat}
+                    disabled={!hasPreviousSession || loading}
+                    $isActive={hasPreviousSession}
+                    $isLoading={loading}
+                >
+                    {loading ? (
+                        <LoadingSpinner />
+                    ) : (
                         <HistoryIcon />
-                    </ContinueButton>
-                )}
+                    )}
+                </ContinueButton>
+
                 <Input
                     ref={inputRef}
                     value={message}
@@ -99,6 +105,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     placeholder="Задайте вопрос..."
                     disabled={loading}
                 />
+
                 <SendButton
                     onClick={handleSend}
                     disabled={loading}

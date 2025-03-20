@@ -1,13 +1,28 @@
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import { pulseEffect, buttonHover } from '../../../animations/keyframes';
+
+const focusPulse = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 125, 255, 0.3);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(74, 125, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 125, 255, 0);
+  }
+`;
 
 export const animations = {
     pulseEffect: css`
-    animation: ${pulseEffect} 2s infinite alternate;
-  `,
+        animation: ${pulseEffect} 2s infinite alternate;
+    `,
     buttonHover: css`
-    animation: ${buttonHover} 0.6s ease infinite;
-  `,
+        animation: ${buttonHover} 0.6s ease infinite;
+    `,
+    focusPulse: css`
+        animation: ${focusPulse} 1.5s infinite;
+    `
 };
 
 export const InputWrapper = styled('div')<{ $isExpanded: boolean; $isFirstMessage: boolean }>(
@@ -24,8 +39,8 @@ export const InputWrapper = styled('div')<{ $isExpanded: boolean; $isFirstMessag
         marginTop: 'auto',
         transition: 'all 0.3s ease-in-out',
         zIndex: 1002,
-        backgroundColor: $isExpanded ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
-        boxShadow: $isExpanded ? 'none' : '0 -2px 10px rgba(0, 0, 0, 0.05)',
+        backgroundColor: 'transparent', // Убираем фон
+        boxShadow: $isExpanded ? 'none' : 'none', // Убираем тень
     })
 );
 
@@ -41,13 +56,19 @@ export const InputContainer = styled('div')<{ $isExpanded: boolean; $isFirstMess
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
         transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         '&:focus-within': {
-            boxShadow: '0 4px 12px rgba(106, 113, 235, 0.3)'
+            boxShadow: '0 0 0 1px rgba(74, 125, 255, 0.5)',
+            transform: 'scale(1.005)'
         },
         '@media (max-width: 768px)': {
             maxWidth: $isExpanded ? '95%' : '85%'
         }
     }),
-    ({ $isExpanded, $isFirstMessage }) => !$isExpanded && animations.pulseEffect
+    ({ $isExpanded, $isFirstMessage }) => !$isExpanded && animations.pulseEffect,
+    ({ $isExpanded }) => $isExpanded && css`
+        &:focus-within {
+            ${animations.focusPulse}
+        }
+    `
 );
 
 export const Input = styled('input')({
@@ -93,8 +114,8 @@ export const SendButton = styled('button')<{ $hasText: boolean }>(
 );
 
 // Кнопка продолжения диалога (слева от ввода)
-export const ContinueButton = styled('button')(
-    {
+export const ContinueButton = styled('button')<{ $isActive: boolean; $isLoading: boolean }>(
+    ({ $isActive, $isLoading }) => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -103,15 +124,34 @@ export const ContinueButton = styled('button')(
         background: 'transparent',
         border: '1px solid #e0e0e0',
         borderRadius: '50%',
-        cursor: 'pointer',
+        cursor: $isActive ? 'pointer' : 'default',
+        opacity: $isActive ? 1 : 0.5,
         transition: 'all 0.2s ease',
         marginRight: '6px',
+        color: $isActive ? '#666' : '#aaa',
         '&:hover': {
-            background: 'rgba(0, 0, 0, 0.05)',
-            transform: 'scale(1.05)'
+            background: $isActive ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
+            transform: $isActive ? 'scale(1.05)' : 'none'
         },
         '&:active': {
-            transform: 'scale(0.95)'
+            transform: $isActive ? 'scale(0.95)' : 'none'
+        },
+        '&:disabled': {
+            opacity: $isLoading ? 0.8 : 0.5,
+            cursor: 'default'
         }
-    }
+    })
 );
+
+// Спиннер загрузки для кнопки истории
+export const LoadingSpinner = styled('div')({
+    width: '16px',
+    height: '16px',
+    border: '2px solid rgba(0, 0, 0, 0.1)',
+    borderTopColor: '#666',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    '@keyframes spin': {
+        to: { transform: 'rotate(360deg)' }
+    }
+});

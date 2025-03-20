@@ -3,32 +3,36 @@ import styled from 'styled-components';
 export const MessagesContainer = styled('div')({
     display: 'flex',
     flexDirection: 'column',
-    padding: '80px 10px 90px 10px', // Увеличенный отступ сверху для заголовка и снизу для инпута
+    padding: '80px 10px 90px 10px',
     overflow: 'auto',
-    maxHeight: 'calc(100vh - 80px)', // Учитываем отступ для инпута
+    maxHeight: 'calc(100vh - 120px)', // Увеличиваем отступ сверху
     height: '100vh',
     scrollBehavior: 'smooth',
     position: 'relative',
     backdropFilter: "blur(5px)",
-    maskImage: "linear-gradient(to bottom, black 90%, transparent 100%)",
+    maskImage: "linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)", // Плавное затухание скролла сверху и снизу
 
-    // Улучшенный стиль скроллбара - показывается только при наведении
+    // Стиль скроллбара в стиле macOS
     '&::-webkit-scrollbar': {
-        width: '4px'
+        width: '8px',
+        backgroundColor: 'transparent',
     },
 
     '&::-webkit-scrollbar-track': {
-        background: 'transparent',
+        backgroundColor: 'transparent',
+        margin: '4px 0',
     },
 
     '&::-webkit-scrollbar-thumb': {
-        background: 'rgba(0, 0, 0, 0.1)',
-        borderRadius: '4px',
-        transition: 'background 0.3s ease'
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        borderRadius: '10px',
+        border: '2px solid transparent',
+        backgroundClip: 'content-box',
+        transition: 'background-color 0.3s ease',
     },
 
     '&:hover::-webkit-scrollbar-thumb': {
-        background: 'rgba(0, 0, 0, 0.2)'
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
     }
 });
 
