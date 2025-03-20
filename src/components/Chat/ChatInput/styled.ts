@@ -1,5 +1,5 @@
 import styled, { css, keyframes } from 'styled-components';
-import { pulseEffect, buttonHover } from '../../../animations/keyframes
+import { pulseEffect, buttonHover } from '../../../animations/keyframes';
 
 // Анимация подсветки бордера
 const borderGlow = keyframes`
