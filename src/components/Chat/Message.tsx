@@ -5,7 +5,7 @@ import { Message as MessageType } from '../../types/chat';
 import { messageAppear } from '../../animations/chatAnimations';
 import { ContentRenderer } from './ContentRenderer';
 import { Avatar } from '@pulse/ui/components/Avatar';
-import { useUser, useUserBasicPhoto } from '@sber-hrp-core/api-user/hooks';
+import { useUser, useUserPBasicPhoto } from '@sber-hrp-core/api-user/hooks';
 import { getAvatar } from './getAvatar';
 import pulseNeuroui from "../../assets/pulse-neuroui-avatar.svg";
 
@@ -64,7 +64,7 @@ export const Message: React.FC<MessageProps> = ({ message, isLast }) => {
 
   // Получаем только данные для аватара
   const { user } = useUser();
-  const basicPhoto = useUserBasicPhoto();
+  const basicPhoto = useUserPBasicPhoto();
 
   // Получаем URL аватара пользователя с помощью функции getAvatar
   const avatarSrc = getAvatar(basicPhoto, user?.personUuid);
