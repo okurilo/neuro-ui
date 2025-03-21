@@ -2,7 +2,6 @@
 import React from 'react';
 import { Message } from '../../types/chat';
 import { Text } from '@pulse/ui/components/Text';
-import { WidgetRenderer } from './WidgetRenderer';
 import styled from 'styled-components';
 import { fadeIn } from '../../animations/chatAnimations';
 import { css } from 'styled-components';
