@@ -21,10 +21,11 @@ const SendIcon = () => (
 
 // SVG иконка для кнопки продолжения диалога
 const HistoryIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" >
-        <path d="M12 8v4l3 3" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M3.05 11a9 9 0 1 1 .5 4" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M3 16V8h8" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 5V10L13 13" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2C12.5013 2 14.7172 3.1 16.1249 4.87501"
+            stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M16 2V5H13" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
 
