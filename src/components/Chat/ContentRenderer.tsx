@@ -5,7 +5,7 @@ import { Text } from '@pulse/ui/components/Text';
 import styled from 'styled-components';
 import { fadeIn } from '../../animations/chatAnimations';
 import { css } from 'styled-components';
-import { Visualizer } from '../../../../../lib/wivis/Visualizer';
+import { Visualizer } from "../../../wivis/Visualizer";
 
 interface ContentRendererProps {
     message: Message;
